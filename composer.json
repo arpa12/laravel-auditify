@@ -1,0 +1,47 @@
+{
+    "name": "arpanihan/auditify",
+    "description": "A high-performance, decoupled audit logging and real-time threat detection package for Laravel. Features action log diffs, session activity tracking, custom authorization callbacks, and queued alerts.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "audit-log",
+        "activity-log",
+        "security-log",
+        "threat-detection",
+        "diff",
+        "xss-protection",
+        "database-audit"
+    ],
+    "authors": [
+        {
+            "name": "Arpan Ihan",
+            "email": "arpanihan@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.2|^8.3",
+        "maatwebsite/excel": "^3.1"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
+        "phpunit/phpunit": "^10.5 || ^11.0 || ^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Auditify\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Auditify\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Auditify\\AuditifyServiceProvider"
+            ]
+        }
+    }
+}
