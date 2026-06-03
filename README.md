@@ -282,7 +282,7 @@ For support, suggestions, or general inquiries, you can reach out via email:
 ---
 
 ## 👤 Author
-**Arpan Ihan**
+**Arpa Nihan**
 * [GitHub](https://github.com/arpa12)
 * [LinkedIn](https://www.linkedin.com/in/arpanihan/)
 
@@ -290,3 +290,5 @@ For support, suggestions, or general inquiries, you can reach out via email:
 
 ## 📄 License
 Released under the MIT License. See [LICENSE.md](LICENSE.md) for details.
+
+Copyright &copy; 2026 Arpa Nihan. All rights reserved.

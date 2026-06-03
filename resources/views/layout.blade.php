@@ -928,7 +928,7 @@
             </nav>
 
             <div class="sidebar-footer">
-                Auditify Modular
+                &copy; {{ date('Y') }} Arpa Nihan
             </div>
         </aside>
 
