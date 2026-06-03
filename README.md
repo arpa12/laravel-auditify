@@ -275,20 +275,57 @@ Run all tests:
 
 ---
 
-## 🆘 Support
-For support, suggestions, or general inquiries, you can reach out via email:
-* 💌 **Email**: [arpanihan8@gmail.com](mailto:arpanihan8@gmail.com)
-
----
-
 ## 👤 Author
-**Arpa Nihan**
-* [GitHub](https://github.com/arpa12)
-* [LinkedIn](https://www.linkedin.com/in/arpanihan/)
+
+<p align="center">
+  <strong>Arpa Nihan</strong><br>
+  <em>Full Stack Developer · Laravel Enthusiast</em>
+</p>
+
+<p align="center">
+  <a href="mailto:arpanihan8@gmail.com"><img src="https://img.shields.io/badge/Email-arpanihan8@gmail.com-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email"></a>
+  <a href="https://www.linkedin.com/in/arpanihan/"><img src="https://img.shields.io/badge/LinkedIn-arpanihan-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn"></a>
+  <a href="https://github.com/arpa12"><img src="https://img.shields.io/badge/GitHub-arpa12-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub"></a>
+</p>
 
 ---
 
 ## 📄 License
-Released under the MIT License. See [LICENSE.md](LICENSE.md) for details.
 
-Copyright &copy; 2026 Arpa Nihan. All rights reserved.
+Released under the [MIT License](LICENSE.md).
+
+```text
+MIT License
+
+Copyright (c) 2026 Arpa Nihan
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+<p align="center">
+  ⭐ If Auditify saves you time, please give it a star on GitHub! ⭐
+</p>
+
+<p align="center">
+  <em>Made with ❤️ for the Laravel Community</em>
+</p>
+
+<p align="center">
+  Copyright &copy; 2026 <a href="https://github.com/arpa12">Arpa Nihan</a>. All rights reserved.
+</p>
