@@ -164,6 +164,12 @@
         }
         .filter-actions {
             grid-column: span 1;
+            justify-content: stretch;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .filter-actions .btn {
+            flex-grow: 1;
         }
     }
 </style>
@@ -225,20 +231,20 @@
     <table class="audit-table">
         <thead>
             <tr>
-                <th style="width: 80px;">ID</th>
-                <th>User</th>
-                <th>Activity</th>
-                <th>Target URL</th>
-                <th>IP Address</th>
-                <th>User Agent</th>
-                <th>Created At</th>
+                <th style="width: 80px; white-space: nowrap;">ID</th>
+                <th style="white-space: nowrap;">User</th>
+                <th style="white-space: nowrap;">Activity</th>
+                <th style="white-space: nowrap;">Target URL</th>
+                <th style="white-space: nowrap;">IP Address</th>
+                <th style="white-space: nowrap;">User Agent</th>
+                <th style="white-space: nowrap;">Created At</th>
             </tr>
         </thead>
         <tbody>
             @forelse($logs as $log)
                 <tr>
-                    <td style="font-family: var(--font-mono); color: var(--text-secondary);">#{{ $log->id }}</td>
-                    <td>
+                    <td style="font-family: var(--font-mono); color: var(--text-secondary); white-space: nowrap;">#{{ $log->id }}</td>
+                    <td style="white-space: nowrap;">
                         @if($log->user)
                             <div class="user-pill">
                                 <div class="user-avatar-small">{{ substr($log->user->name, 0, 2) }}</div>
@@ -248,7 +254,7 @@
                             <span style="color: var(--text-muted);">Guest</span>
                         @endif
                     </td>
-                    <td>
+                    <td style="white-space: nowrap;">
                         @php
                             $badgeClass = 'act-other';
                             if (str_starts_with($log->activity, 'Login')) $badgeClass = 'act-login';
@@ -258,14 +264,14 @@
                         @endphp
                         <span class="activity-badge {{ $badgeClass }}">{{ $log->activity }}</span>
                     </td>
-                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); word-break: break-all;">
+                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         {{ $log->url ?? '-' }}
                     </td>
-                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">{{ $log->ip_address ?? '-' }}</td>
+                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">{{ $log->ip_address ?? '-' }}</td>
                     <td style="color: var(--text-muted); font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         {{ $log->user_agent ?? '-' }}
                     </td>
-                    <td><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
+                    <td style="white-space: nowrap;"><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
                 </tr>
             @empty
                 <tr>

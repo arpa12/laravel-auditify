@@ -135,10 +135,27 @@
         border-color: var(--border-hover);
         background-color: var(--table-row-hover);
     }
-    .paginator-container .active {
-        background-color: var(--color-indigo);
-        border-color: var(--color-indigo);
-        color: white;
+    @media (max-width: 1024px) {
+        .filter-panel {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .filter-actions {
+            grid-column: span 2;
+        }
+    }
+    @media (max-width: 640px) {
+        .filter-panel {
+            grid-template-columns: 1fr;
+        }
+        .filter-actions {
+            grid-column: span 1;
+            justify-content: stretch;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .filter-actions .btn {
+            flex-grow: 1;
+        }
     }
 </style>
 
@@ -209,21 +226,21 @@
     <table class="audit-table">
         <thead>
             <tr>
-                <th style="width: 80px;">ID</th>
-                <th>User</th>
-                <th>Severity</th>
-                <th>Title</th>
+                <th style="width: 80px; white-space: nowrap;">ID</th>
+                <th style="white-space: nowrap;">User</th>
+                <th style="white-space: nowrap;">Severity</th>
+                <th style="white-space: nowrap;">Title</th>
                 <th>Description</th>
-                <th>IP Address</th>
-                <th>Created At</th>
-                <th style="width: 180px; text-align: center;">Actions</th>
+                <th style="white-space: nowrap;">IP Address</th>
+                <th style="white-space: nowrap;">Created At</th>
+                <th style="width: 180px; text-align: center; white-space: nowrap;">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse($logs as $log)
                 <tr class="{{ !$log->is_read ? 'row-unread' : '' }}">
-                    <td style="font-family: var(--font-mono); color: var(--text-secondary);">#{{ $log->id }}</td>
-                    <td>
+                    <td style="font-family: var(--font-mono); color: var(--text-secondary); white-space: nowrap;">#{{ $log->id }}</td>
+                    <td style="white-space: nowrap;">
                         @if($log->user)
                             <div class="user-pill">
                                 <span style="color: var(--text-primary);">{{ $log->user->name }}</span>
@@ -232,13 +249,13 @@
                             <span style="color: var(--text-muted);">System</span>
                         @endif
                     </td>
-                    <td>
+                    <td style="white-space: nowrap;">
                         <span class="sev-badge sev-{{ $log->severity }}">{{ $log->severity }}</span>
                     </td>
-                    <td style="color: var(--card-text-highlight);">{{ $log->title }}</td>
+                    <td style="color: var(--card-text-highlight); white-space: nowrap;">{{ $log->title }}</td>
                     <td style="color: var(--text-secondary);">{{ $log->description }}</td>
-                    <td style="font-family: var(--font-mono); color: var(--text-primary);">{{ $log->ip_address ?? '-' }}</td>
-                    <td><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
+                    <td style="font-family: var(--font-mono); color: var(--text-primary); white-space: nowrap;">{{ $log->ip_address ?? '-' }}</td>
+                    <td style="white-space: nowrap;"><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
                     <td style="text-align: center;">
                         <div style="display: flex; gap: 8px; justify-content: center; align-items: center;">
                             <a href="{{ url(config('auditify.route_prefix', 'auditify') . '/security-logs/' . $log->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">

@@ -26,6 +26,7 @@
         transition: var(--transition-smooth);
         position: relative;
         overflow: hidden;
+        min-width: 0;
     }
     .kpi-card:hover {
         border-color: var(--border-hover);
@@ -123,6 +124,8 @@
         padding: 24px;
         box-shadow: var(--shadow-sm);
         transition: var(--transition-smooth);
+        min-width: 0;
+        overflow: hidden;
     }
     
     .widget-title {

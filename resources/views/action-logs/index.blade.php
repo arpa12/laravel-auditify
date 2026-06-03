@@ -144,6 +144,14 @@
         .filter-panel {
             grid-template-columns: 1fr;
         }
+        .filter-actions {
+            justify-content: stretch;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .filter-actions .btn {
+            flex-grow: 1;
+        }
     }
 </style>
 
@@ -214,21 +222,21 @@
     <table class="audit-table">
         <thead>
             <tr>
-                <th style="width: 80px;">ID</th>
-                <th>User</th>
-                <th>Action</th>
-                <th>Module</th>
+                <th style="width: 80px; white-space: nowrap;">ID</th>
+                <th style="white-space: nowrap;">User</th>
+                <th style="white-space: nowrap;">Action</th>
+                <th style="white-space: nowrap;">Module</th>
                 <th>Description</th>
-                <th>IP Address</th>
-                <th>Created At</th>
-                <th style="width: 100px; text-align: center;">Actions</th>
+                <th style="white-space: nowrap;">IP Address</th>
+                <th style="white-space: nowrap;">Created At</th>
+                <th style="width: 100px; text-align: center; white-space: nowrap;">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse($logs as $log)
                 <tr>
-                    <td style="font-family: var(--font-mono); color: var(--text-secondary);">#{{ $log->id }}</td>
-                    <td>
+                    <td style="font-family: var(--font-mono); color: var(--text-secondary); white-space: nowrap;">#{{ $log->id }}</td>
+                    <td style="white-space: nowrap;">
                         @if($log->user)
                             <div class="user-pill">
                                 <div class="user-avatar-small">{{ substr($log->user->name, 0, 2) }}</div>
@@ -238,7 +246,7 @@
                             <span style="color: var(--text-muted);">Guest</span>
                         @endif
                     </td>
-                    <td>
+                    <td style="white-space: nowrap;">
                         @php
                             $badgeClass = 'badge-other';
                             if ($log->action === 'CREATE') $badgeClass = 'badge-create';
@@ -247,11 +255,11 @@
                         @endphp
                         <span class="badge {{ $badgeClass }}">{{ $log->action }}</span>
                     </td>
-                    <td style="font-weight: 500;">{{ $log->module }}</td>
+                    <td style="font-weight: 500; white-space: nowrap;">{{ $log->module }}</td>
                     <td style="color: var(--text-secondary);">{{ $log->description }}</td>
-                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">{{ $log->ip_address ?? '-' }}</td>
-                    <td><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
-                    <td style="text-align: center;">
+                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">{{ $log->ip_address ?? '-' }}</td>
+                    <td style="white-space: nowrap;"><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
+                    <td style="text-align: center; white-space: nowrap;">
                         <a href="{{ url(config('auditify.route_prefix', 'auditify') . '/action-logs/' . $log->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">
                             Details
                         </a>
