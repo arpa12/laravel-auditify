@@ -854,6 +854,17 @@
                         $unreadSecurityCount = \Auditify\Models\SecurityLog::unread()->count();
                     @endphp
                     
+                    <!-- Dashboard -->
+                    <li class="nav-item {{ $isDashboard ? 'active' : '' }}">
+                        <a href="{{ url($prefix) }}">
+                            <!-- Home Icon -->
+                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    
                     <!-- Module 1: Action Logs -->
                     <li class="nav-item {{ $isActionLogs ? 'active' : '' }}">
                         <a href="{{ url($prefix . '/action-logs') }}">

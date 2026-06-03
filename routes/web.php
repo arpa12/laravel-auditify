@@ -14,10 +14,8 @@ Route::middleware($middleware)
     ->prefix(config('auditify.route_prefix', 'auditify'))
     ->group(function () {
 
-        // Redirect root to Action Logs (Landing/Dashboard Overview removed)
-        Route::get('/', function () {
-            return redirect()->to(url(config('auditify.route_prefix', 'auditify') . '/action-logs'));
-        });
+        // Unified Dashboard
+        Route::get('/', [DashboardController::class, 'index']);
 
         // Module 1: Action Logs
         Route::get('/action-logs', [ActionLogController::class, 'index']);
