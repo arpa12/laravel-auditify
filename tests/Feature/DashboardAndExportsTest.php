@@ -17,7 +17,7 @@ class DashboardAndExportsTest extends TestCase
         config(['auth.providers.users.model' => User::class]);
     }
 
-    public function test_dashboard_renders_successfully(): void
+    public function test_dashboard_redirects_to_action_logs(): void
     {
         $user = User::create([
             'name' => 'John Doe',
@@ -27,13 +27,23 @@ class DashboardAndExportsTest extends TestCase
 
         $response = $this->actingAs($user)->get('/auditify');
 
+        $response->assertRedirect('/auditify/action-logs');
+    }
+
+    public function test_action_logs_renders_successfully(): void
+    {
+        $user = User::create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->actingAs($user)->get('/auditify/action-logs');
+
         $response->assertStatus(200);
-        $response->assertSee('Overview Dashboard');
         $response->assertSee('Action Logs');
         $response->assertSee('Activity Logs');
         $response->assertSee('Security Logs');
-        $response->assertSee('Recent User Activities');
-        $response->assertSee('Recent Security Violations');
     }
 
     public function test_action_logs_view_and_exports(): void
@@ -179,7 +189,7 @@ class DashboardAndExportsTest extends TestCase
             'password' => bcrypt('password'),
         ]);
 
-        $response = $this->actingAs($user)->get('/auditify');
+        $response = $this->actingAs($user)->get('/auditify/action-logs');
         $response->assertStatus(200);
     }
 }

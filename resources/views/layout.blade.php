@@ -854,17 +854,6 @@
                         $unreadSecurityCount = \Auditify\Models\SecurityLog::unread()->count();
                     @endphp
                     
-                    <!-- Dashboard -->
-                    <li class="nav-item {{ $isDashboard ? 'active' : '' }}">
-                        <a href="{{ url($prefix) }}">
-                            <!-- Home Icon -->
-                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-                            </svg>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    
                     <!-- Module 1: Action Logs -->
                     <li class="nav-item {{ $isActionLogs ? 'active' : '' }}">
                         <a href="{{ url($prefix . '/action-logs') }}">
@@ -898,16 +887,6 @@
                             @if($unreadSecurityCount > 0)
                                 <span class="sidebar-badge">{{ $unreadSecurityCount }}</span>
                             @endif
-                        </a>
-                    </li>
-
-                    <!-- Documentation -->
-                    <li class="nav-item">
-                        <a href="/docs" target="_blank">
-                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 11.55C11.2 10.4 9.68 9.5 8 9.5c-1.68 0-3.2.9-4 2.05v-8.2c.8-1.15 2.32-2.05 4-2.05s3.2.9 4 2.05v8.25zm8-8.2c-.8-1.15-2.32-2.05-4-2.05s-3.2.9-4 2.05v8.25c.8-1.15 2.32-2.05 4-2.05s3.2.9 4 2.05v-8.2zM2 21.5c1.5 0 3.5-1 5-2 1.5 1 3.5 2 5 2s3.5-1 5-2c1.5 1 3.5 2 5 2v-1.5c-1.5 0-3.5-1-5-2-1.5 1-3.5 2-5 2s-3.5-1-5-2c-1.5 1-3.5 2-5 2v1.5z"/>
-                            </svg>
-                            <span>Documentation</span>
                         </a>
                     </li>
                 </ul>
