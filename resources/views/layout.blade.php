@@ -342,6 +342,14 @@
             transition: var(--transition-smooth);
             position: relative;
         }
+        .bell-btn option {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        select option {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+        }
         .bell-btn:hover {
             color: var(--text-primary);
             border-color: var(--border-hover);
