@@ -5,43 +5,60 @@
 </p>
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/arpanihan/auditify.svg?style=flat-square)](https://packagist.org/packages/arpanihan/auditify)
+[![Total Downloads](https://img.shields.io/packagist/dt/arpanihan/auditify.svg?style=flat-square)](https://packagist.org/packages/arpanihan/auditify)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.md)
 
-**Auditify** is a modern, high-performance audit logging and real-time threat detection package for Laravel. 
+**Auditify** is an easy-to-use, high-performance audit logging and threat detection package for Laravel. 
 
 Unlike standard logging libraries, Auditify uses a **decoupled database design** to separate logs into three distinct tables. This optimizes database table indexing, reduces write congestion, and guarantees clean scale organization as your application grows.
 
 ---
 
-## Key Features
-
-- **Decoupled Database Architecture**: Splitting logs into Action, Activity, and Security tables.
-- **Side-by-Side Model Diffs**: Automatic tracking of database modifications (Create, Update, Delete, Restore) showing before/after attribute arrays.
-- **Real-Time Threat Detection**: Triggers alerts for mass deletions, rapid updates, and bulk login failures.
-- **XSS Attack Shield**: Global scanner detecting cross-site scripting attempts, immediately blocking requests and saving critical security logs.
-- **Flexible Multi-User / Guard Association**: Automatically traces actions from any authenticatable model schema (`User`, `Admin`, `Customer`, etc.) dynamically.
-- **Custom Authorization Gateways**: Easily register runtime callbacks to secure access to the dashboard.
-- **Console Pruning System**: Automated cleanup commands to delete historical log tables without database bloat.
-- **Premium Glassmorphic Dashboard**: Fully-responsive dashboard featuring toggling light/dark themes and real-time Chart.js trend graphs.
+## Table of Contents
+* [Requirements](#-requirements)
+* [Installation](#-installation)
+* [Configuration](#-configuration)
+* [Features](#-features)
+  * [Dashboard](#-dashboard)
+  * [Decoupled Log Modules](#-decoupled-log-modules)
+  * [Real-Time Threat Engine](#-real-time-threat-engine)
+  * [XSS Attack Shield](#-xss-attack-shield)
+  * [Frontend Event Logging API](#-frontend-event-logging-api)
+  * [Custom Dashboard Authorization Gate](#-custom-dashboard-authorization-gate)
+* [Artisan Commands](#%EF%B8%8F-artisan-commands)
+* [Routes Reference](#-routes-reference)
+* [Testing](#-testing)
+* [Support](#-support)
+* [Author](#-author)
+* [License](#-license)
 
 ---
 
-## 1. Quick Start (3-Minute Setup)
+## 🖥️ Requirements
 
-### Step 1: Install the Package
+| Laravel | PHP |
+|---|---|
+| 11.x, 12.x | 8.2 – 8.4 |
+| 10.x | 8.2 – 8.3 |
+
+---
+
+## 📦 Installation
+
+### 1. Install via Composer
 Run this command in your project root:
 ```bash
 composer require arpanihan/auditify
 ```
 
-### Step 2: Run the Installer
+### 2. Run the Installer
 Run the installation command to publish configuration files, copy migrations, and set up your database automatically:
 ```bash
 php artisan auditify:install
 ```
 
-### Step 3: Add Trait to Your Models
-Add the `Auditable` trait to any Eloquent model you want to track:
+### 3. Add the Trait to Your Models
+Add the `Auditable` trait to any Eloquent model you want to track changes for:
 ```php
 namespace App\Models;
 
@@ -54,150 +71,120 @@ class Product extends Model
 }
 ```
 
-### Step 4: Access the Dashboard
-Navigate to `/auditify` in your browser to view your logs.
-
 ---
 
-## 2. Decoupled Log Modules
+## ⚙️ Configuration
 
-Auditify separates data tracking into three target models under `Auditify\Models` to prevent database bottlenecks:
+After publishing, customize your settings in `config/auditify.php`:
 
-### Action Logs (`ActionLog`)
-* **Table Name**: `audit_action_logs`
-* **Purpose**: Captures database write processes.
-* **Captured Attributes**: Action type, model description, side-by-side attributes difference (`old_values` and `new_values` JSON structures), URL, user agent, and originating IP address.
-
-### Activity Logs (`ActivityLog`)
-* **Table Name**: `audit_activity_logs`
-* **Purpose**: Tracks session states and application user navigation.
-* **Captured Attributes**: Auth actions (logins, logouts, failure states), visited route paths, user agent, and IP address.
-
-### Security Logs (`SecurityLog`)
-* **Table Name**: `audit_security_logs`
-* **Purpose**: Records security violations flagged by the threat engine or XSS firewall.
-* **Captured Attributes**: Alert title, threat severity (low, medium, high, critical), description, IP address, and User-Agent.
-
----
-
-## 3. Step-by-Step Installation (Manual)
-
-If you prefer to perform setup steps manually instead of using the `auditify:install` shortcut:
-
-### Step 1: Publish Configuration
-```bash
-php artisan vendor:publish --tag="auditify-config"
-```
-
-### Step 2: Publish Migrations
-```bash
-php artisan vendor:publish --tag="auditify-migrations"
-```
-
-### Step 3: Run Migrations
-```bash
-php artisan migrate
-```
-
----
-
-## 4. Basic Usage & Code Examples
-
-### Manual Actions Logging
-Write to the action logs at any time using the facade helper:
 ```php
-use Auditify\Facades\Auditify;
+return [
+    // Base URL route prefix: https://your-domain.com/auditify
+    'route_prefix' => 'auditify',
 
-Auditify::logAction(
-    action: 'APPROVE',
-    module: 'Invoice',
-    description: 'Invoice #204 approved by billing supervisor',
-    oldValues: ['status' => 'pending'],
-    newValues: ['status' => 'approved']
-);
-```
+    // Dashboard visual layout theme: 'dark' or 'light'
+    'theme' => 'dark',
 
-### Manual Session/Activity Logging
-Log custom visitor actions inside controller endpoints:
-```php
-use Auditify\Facades\Auditify;
+    // Middlewares applied to the dashboard routes
+    'middleware' => [
+        'web',
+    ],
 
-Auditify::logActivity('Initiated shopping cart checkout process');
-```
+    // Log entries shown per page
+    'pagination' => 20,
 
-### Manual Security Logging
-Log custom security warnings or threat detections:
-```php
-use Auditify\Facades\Auditify;
+    // Track details
+    'track_ip' => true,
+    'track_user_agent' => true,
+    'track_url' => true,
 
-Auditify::logSecurity(
-    title: 'Unauthorized API Access',
-    description: 'IP tried to query private admin API routes without permissions',
-    severity: 'high'
-);
+    // Authorization configuration
+    'authorization' => [
+        'enabled' => false,
+        'gate' => 'view-auditify',
+    ],
+
+    // Automatic tracking configurations
+    'track_auth_events' => true, // Login, Logout, Failed logins
+    'track_page_visits' => true, // Page visits
+
+    // Firewall scanning
+    'xss_protection' => [
+        'enabled' => true,
+        'block' => true,         // Abort requests with HTTP 403 when script is found
+        'exclude_routes' => [
+            // 'admin/rich-text/*',
+        ],
+    ],
+
+    // Pruning configuration
+    'pruning' => [
+        'keep_days' => 90,       // Default age in days for keeping historical log rows
+    ],
+];
 ```
 
 ---
 
-## 5. Advanced Extensibility
+## 🚀 Features
 
-### Multi-User and Multi-Guard Tracking
-Auditify utilizes polymorphic relationships under the hood. It automatically resolves the currently authenticated user across any guard (e.g. `web`, `admin`, `api`). 
+### 📊 Dashboard
+URL: `/auditify`
 
-You can also explicitly pass custom authenticatable models to be logged:
-```php
-use Auditify\Facades\Auditify;
+The main glassmorphic dashboard aggregates action logs, page visits, and threat alerts into an interactive screen:
+* **Metrics counters** — total action logs, activity logs, and security logs with unread indicators.
+* **Log summaries** — breakdowns of operations (Create, Update, Delete) and authentication events (Login, Logout).
+* **7-day trend graph** — comparative daily counts of Actions vs Activities plotted on Chart.js.
+* **Top active users & top modified modules** — lists of most active user IDs and frequently changed models.
+* **Live recent logs** — lists of the most recent visitor actions and security alerts.
 
-Auditify::logActivity(
-    activity: 'Updated system security setting profile',
-    url: request()->fullUrl(),
-    userId: $adminModelInstance // Custom authenticatable model instance
-);
-```
+### 🗄️ Decoupled Log Modules
+Auditify separates data logging into three target models under `Auditify\Models` to avoid write bottlenecks:
 
-Or pass a specific user ID and type structure manually:
-```php
-Auditify::logActivity(
-    activity: 'Updated system security setting profile',
-    url: request()->fullUrl(),
-    userId: ['id' => 12, 'type' => \App\Models\Admin::class]
-);
-```
+#### Action Logs (`ActionLog`)
+*   **Table Name**: `audit_action_logs`
+*   **Purpose**: Logs database modifications.
+*   **Captured Attributes**: Action type, model description, side-by-side attributes difference (`old_values` and `new_values` JSON structures), URL, user agent, IP address, and authenticated user.
 
-### Bypassing Auditing
-If you are running large database seeds, data imports, or system migrations, execute your code inside the `withoutAuditing` closure to bypass action logs and maintain high performance:
-```php
-use Auditify\Facades\Auditify;
+#### Activity Logs (`ActivityLog`)
+*   **Table Name**: `audit_activity_logs`
+*   **Purpose**: Logs user interaction, navigation, and auth events.
+*   **Captured Attributes**: Auth status events (logins, logouts, login failures), visited pages, page request URLs, user agent, IP address, and user ID.
 
-Auditify::withoutAuditing(function () {
-    // Run database seeder without generating database log records
-    Project::factory()->count(1000)->create();
-});
-```
+#### Security Logs (`SecurityLog`)
+*   **Table Name**: `audit_security_logs`
+*   **Purpose**: Logs security alerts triggered by the XSS firewall or threat engine.
+*   **Captured Attributes**: Alert title, threat severity (low, medium, high, critical), description, IP address, user agent, read status, and user ID.
 
-Alternatively, you can disable and enable auditing manually:
-```php
-Auditify::disableAuditing();
-// Run your bulk queries...
-Auditify::enableAuditing();
-```
+### 📈 Real-Time Threat Engine
+Auditify automatically monitors activity logs and logs high-priority Security entries when rules are broken:
+* **Mass Delete Shield**: Fires a `critical` security log if a user deletes 5 or more records (default) in a single model within 5 minutes.
+* **Bulk Update Shield**: Fires a `high` security log if a user updates 10 or more records (default) in a single model within 5 minutes.
+* **Failed Logins monitor**: Tracks failed logins. Fires a `high` security log if 3 or more failed login attempts are recorded within 5 minutes.
+* **Sensitive Module monitor**: Triggers a `medium` security log whenever models listed in `sensitive_modules` (e.g. `User`, `Role`, `Permission`, `Setting`, `Config`) are modified.
+* **Permission Changes**: Triggers a `high` security log whenever a permission, role, or gate mapping is added, modified, or deleted.
 
-### XSS Attack Shield Exclusions
-If you have input forms that require rich HTML or code blocks (e.g., markdown editors), add route exclusion patterns in your configuration file to prevent the XSS middleware from blocking requests:
+### 🛡️ XSS Attack Shield
+Auditify has built-in XSS protection. It automatically scans all incoming request parameters (such as `$_GET` or `$_POST`) and route variables. 
 
+If it detects common XSS patterns (like `<script>`, `javascript:`, or SVG events), it:
+1. Logs a **critical** security log entry.
+2. Returns an HTTP `403 Forbidden` response to block the request.
+
+If you have pages that require rich text input (e.g. admin markdown or HTML editors), exclude them in your `config/auditify.php` file:
 ```php
 'xss_protection' => [
     'enabled' => true,
     'block' => true,
     'exclude_routes' => [
-        'admin/rich-text/*',
+        'admin/articles/*',
         'posts/*/edit',
     ],
 ],
 ```
 
-### Frontend Event Logging API
-Track user interactions, clicks, and page events directly from client-side JavaScript by calling the API event endpoint:
+### 🔌 Frontend Event Logging API
+Track button clicks, mouse behaviors, or client-side Javascript actions by sending a POST request to `/auditify/api/events`.
 
 ```javascript
 fetch('/auditify/api/events', {
@@ -207,92 +194,103 @@ fetch('/auditify/api/events', {
         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
     },
     body: JSON.stringify({
-        event_name: 'Document Download',
-        description: 'User downloaded the fiscal_report_2026.pdf'
+        event_name: 'File Download',
+        description: 'User downloaded the User_Guide.pdf document'
     })
 });
 ```
 
-### Custom Dashboard Authorization
-By default, the Auditify dashboard requires standard web authentication. You can override and write custom authorization closures inside the `boot()` method of `AppServiceProvider`:
+### 🔐 Custom Dashboard Authorization Gate
+By default, the Auditify dashboard uses your default web authentication and guards. To define custom access control, register an authorization callback in the `boot` method of your `AppServiceProvider.php`:
+
 ```php
 use Auditify\Facades\Auditify;
 
-Auditify::auth(function ($request) {
-    // Return true if access is authorized
-    return $request->user() && $request->user()->hasRole('super-admin');
-});
+public function boot()
+{
+    // Restrict dashboard to Super Admins only
+    Auditify::auth(function ($request) {
+        return $request->user() && $request->user()->hasRole('super-admin');
+    });
+}
 ```
 
 ---
 
-## 6. Maintenance & Performance
+## 🛠️ Artisan Commands
 
-### Log Pruning Console Command
-To prevent the audit tables from bloating your database, configure the retention window (default is 90 days) in `config/auditify.php` and schedule the console command inside your console routes file:
+| Command | Description |
+|---|---|
+| `auditify:install` | Runs migrations and publishes configuration files automatically. |
+| `auditify:prune {--days=}` | Deletes old audit log records older than N days (defaults to `keep_days` config value). |
+
+### Automated Database Pruning Setup
+To keep database tables small and performant, automate pruning by scheduling the command in `routes/console.php` (or `app/Console/Kernel.php`):
 
 ```php
-// In routes/console.php or app/Console/Kernel.php
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('auditify:prune --days=90')->daily();
 ```
 
-You can also run pruning manually on demand:
+---
+
+## 🗺️ Routes Reference
+All routes are grouped under the configured `route_prefix` (default: `auditify`) with the configured middleware.
+
+| Method | URI | Controller Action | Description |
+|---|---|---|---|
+| GET | `/` | `DashboardController@index` | Main logs dashboard index |
+| GET | `/action-logs` | `ActionLogController@index` | View list of database action logs |
+| GET | `/action-logs/{id}` | `ActionLogController@show` | View details with side-by-side attributes difference |
+| GET | `/action-logs/export/csv` | `ActionLogController@exportCsv` | Export action logs in CSV format |
+| GET | `/action-logs/export/excel` | `ActionLogController@exportExcel` | Export action logs in Excel format |
+| GET | `/activity-logs` | `ActivityLogController@index` | View list of activity logs |
+| GET | `/activity-logs/export/csv` | `ActivityLogController@exportCsv` | Export activity logs in CSV format |
+| GET | `/activity-logs/export/excel` | `ActivityLogController@exportExcel` | Export activity logs in Excel format |
+| GET | `/security-logs` | `SecurityLogController@index` | View list of security logs |
+| GET | `/security-logs/unread-check` | `SecurityLogController@checkUnreadAlerts` | Live alert poll check |
+| GET | `/security-logs/{id}` | `SecurityLogController@show` | View security log details |
+| POST | `/security-logs/{id}/read` | `SecurityLogController@markAsRead` | Toggle log read state |
+| GET | `/security-logs/export/csv` | `SecurityLogController@exportCsv` | Export security logs in CSV format |
+| GET | `/security-logs/export/excel` | `SecurityLogController@exportExcel` | Export security logs in Excel format |
+| POST | `/api/events` | `ActivityLogController@storeFrontendEvent` | Frontend client-side interaction logging |
+
+---
+
+## 🧪 Testing
+The package features a comprehensive PHPUnit test suite covering models, middlewares, controller endpoints, and Artisan commands. Standalone tests run via `orchestra/testbench` without requiring a parent Laravel installation.
+
+Clone the repository and install development dependencies:
 ```bash
-php artisan auditify:prune --days=30
+git clone https://github.com/arpanihan/auditify.git
+cd auditify
+composer install
+```
+
+Run all tests:
+```bash
+./vendor/bin/phpunit
 ```
 
 ---
 
-## 7. Configuration Reference
+## 🆘 Support
 
-The configuration options table for `config/auditify.php`:
-
-| Option Key | Default | Description |
-|---|---|---|
-| `route_prefix` | `'auditify'` | The URL path prefix for accessing the log dashboard (e.g. `/auditify`). |
-| `theme` | `'dark'` | Visual layout style theme: `'dark'` or `'light'`. |
-| `middleware` | `['web']` | Middleware classes applied to dashboard routes. |
-| `pagination` | `20` | Number of items shown per page in the log tables. |
-| `track_ip` | `true` | Save client IP addresses with logs. |
-| `track_user_agent`| `true` | Save client web browsers with logs. |
-| `track_url` | `true` | Save request URL paths with logs. |
-| `authorization.enabled`| `false` | When true, requires the gate authorization below to open the dashboard. |
-| `authorization.gate`| `'view-auditify'`| Standard Laravel gate required to access the dashboard. |
-| `track_auth_events`| `true` | Auto-log logins, logouts, and login failures. |
-| `track_page_visits`| `true` | Auto-log GET page visits (ignores AJAX, PJAX, and Auditify dashboard routes). |
-| `xss_protection.enabled` | `true` | Turn request XSS scanning on or off. |
-| `xss_protection.block` | `true` | Return HTTP 403 Forbidden to abort requests when XSS is found. |
-| `xss_protection.exclude_routes` | `[]` | Routes to skip during XSS scans (supports wildcard paths like `admin/*`). |
-| `pruning.keep_days`| `90` | Default age in days for keeping historical log rows. |
+| Channel | Link |
+|---|---|
+| 🐛 Bug reports | [GitHub Issues](https://github.com/arpanihan/auditify/issues) |
+| 💬 Feature requests | [GitHub Discussions](https://github.com/arpanihan/auditify/discussions) |
+| 💌 Email | arpanihan@gmail.com |
 
 ---
 
-## 8. Troubleshooting & FAQs
-
-### Q: The dashboard returns a "403 Forbidden" error page.
-* **Reason**: Access to the dashboard is protected and the current user fails the gate or callback checks.
-* **Solution**: Check your configuration settings. Make sure your user passes the gate defined under `authorization.gate` or your custom `Auditify::auth()` callback.
-
-### Q: Legitimate HTML input submissions are being blocked by the XSS scanner.
-* **Reason**: The payload is flagged by the scanner as an XSS vector.
-* **Solution**: Add exclusions to `exclude_routes` in the config file to bypass XSS scanning for specific endpoints.
-
-### Q: Database console migrations or seeds fail or write empty user fields.
-* **Reason**: Inside console commands, there is no active HTTP session or logged-in user context.
-* **Solution**: Wrap seed routines in `Auditify::withoutAuditing()` to bypass logs entirely, or pass model users explicitly inside console commands.
+## 👤 Author
+**Arpan Ihan**
+* [GitHub](https://github.com/arpanihan)
+* [LinkedIn](https://linkedin.com/in/arpanihan)
 
 ---
 
-## 9. Best Practices & Performance
-
-1. **Schedule Regular Pruning**: Schedule the `auditify:prune` command daily to keep tables small and responsive.
-2. **Optimize Bulk Database Writes**: Always bypass auditing using `withoutAuditing` when running seeders, data imports, or heavy backend cleanup processes.
-3. **Index Core Fields**: If your log tables grow to millions of rows, ensure key fields (like `user_id`, `user_type`, and `created_at`) are properly indexed to match dashboard query patterns.
-
----
-
-## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more details.
+## 📄 License
+Released under the MIT License. See [LICENSE.md](LICENSE.md) for details.
