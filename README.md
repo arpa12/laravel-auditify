@@ -279,7 +279,7 @@ Run all tests:
 
 <p align="center">
   <strong>Arpa Nihan</strong><br>
-  <em>Full Stack Developer · Laravel Enthusiast</em>
+  <em>Full Stack Developer</em>
 </p>
 
 <p align="center">
