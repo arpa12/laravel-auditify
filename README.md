@@ -1,7 +1,7 @@
 # Auditify — High-Performance, Decoupled Audit Logging for Laravel
 
 <p align="center">
-  <img src="art/dashboard_mockup.png" alt="Auditify Dashboard Mockup" width="100%">
+  <img src="art/laravel_auditify_banner.png" alt="Laravel Auditify Banner" width="100%">
 </p>
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/arpanihan/auditify.svg?style=flat-square)](https://packagist.org/packages/arpanihan/auditify)
