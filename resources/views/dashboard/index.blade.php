@@ -392,6 +392,13 @@
         .grid-4 { grid-template-columns: 1fr; }
         .breakdown-list { grid-template-columns: repeat(2, 1fr); }
     }
+    @media (max-width: 480px) {
+        .breakdown-list { grid-template-columns: 1fr; }
+        .chart-container { height: 240px !important; }
+        .card { padding: 16px; }
+        .kpi-card { padding: 16px; min-height: 100px; }
+        .kpi-value { font-size: 1.8rem; }
+    }
 </style>
 
 <!-- Top Metrics KPIs -->
@@ -469,7 +476,7 @@
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M5 9.2h3V19H5zM10.5 5h3v14h-3zm5.5 8h3v6h-3z"/></svg>
             Daily Auditing & Interaction Trends
         </h2>
-        <div style="position: relative; height: 320px; width: 100%;">
+        <div class="chart-container" style="position: relative; height: 320px; width: 100%;">
             <canvas id="trendsChart"></canvas>
         </div>
     </div>
@@ -604,7 +611,7 @@
                 <a href="{{ url(config('auditify.route_prefix', 'auditify') . '/security-logs/' . $security->id) }}" class="security-item">
                     <div class="security-indicator indicator-{{ $security->severity }}"></div>
                     <div class="security-details">
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
                             <span class="security-title">{{ $security->title }}</span>
                             @if(!$security->is_read)
                                 <span class="badge" style="background-color: rgba(239, 68, 68, 0.12); color: #ef4444; font-size: 9px; padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid rgba(239, 68, 68, 0.2);">Unresolved</span>

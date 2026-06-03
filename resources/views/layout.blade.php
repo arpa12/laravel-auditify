@@ -813,6 +813,8 @@
             .header-actions {
                 width: 100%;
                 justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
             }
         }
     </style>
