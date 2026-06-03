@@ -276,19 +276,15 @@ Run all tests:
 ---
 
 ## 🆘 Support
-
-| Channel | Link |
-|---|---|
-| 🐛 Bug reports | [GitHub Issues](https://github.com/arpanihan/auditify/issues) |
-| 💬 Feature requests | [GitHub Discussions](https://github.com/arpanihan/auditify/discussions) |
-| 💌 Email | arpanihan@gmail.com |
+For support, suggestions, or general inquiries, you can reach out via email:
+* 💌 **Email**: [arpanihan8@gmail.com](mailto:arpanihan8@gmail.com)
 
 ---
 
 ## 👤 Author
 **Arpan Ihan**
-* [GitHub](https://github.com/arpanihan)
-* [LinkedIn](https://linkedin.com/in/arpanihan)
+* [GitHub](https://github.com/arpa12)
+* [LinkedIn](https://www.linkedin.com/in/arpanihan/)
 
 ---
 
