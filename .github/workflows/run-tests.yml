@@ -37,11 +37,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd packages/arpanihan/auditify
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --dev --no-interaction --no-update
           composer update --prefer-dist --no-interaction
 
       - name: Execute tests
         run: |
-          cd packages/arpanihan/auditify
           vendor/bin/phpunit -c phpunit.xml
