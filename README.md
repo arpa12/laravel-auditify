@@ -185,21 +185,50 @@ If you have pages that require rich text input (e.g. admin markdown or HTML edit
 ```
 
 ### 🔌 Frontend Event Logging API
-Track button clicks, mouse behaviors, or client-side Javascript actions by sending a POST request to `/auditify/api/events`.
+
+While Auditify automatically logs backend events (such as database changes and page visits), it cannot capture client-side user interactions (like button clicks, file downloads, or modal views) on its own. 
+
+Auditify provides a built-in endpoint `/auditify/api/events` to bridge this gap. You can send a `POST` request from your frontend JavaScript to log client-side actions directly into your **Activity Logs**. Auditify will automatically associate these logs with the active authenticated user, their IP address, and their browser user agent.
+
+#### Example Usage
+
+1. **Create a reusable JavaScript helper** to handle the `POST` request (which automatically forwards the Laravel CSRF token):
 
 ```javascript
-fetch('/auditify/api/events', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    },
-    body: JSON.stringify({
-        event_name: 'File Download',
-        description: 'User downloaded the User_Guide.pdf document'
+function logEvent(eventName, description) {
+    fetch('/auditify/api/events', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            event_name: eventName,
+            description: description
+        })
     })
-});
+    .then(response => response.json())
+    .then(data => console.log('Event logged:', data))
+    .catch(error => console.error('Error logging event:', error));
+}
 ```
+
+2. **Trigger it on user actions** (e.g., clicking a button or downloading a file):
+
+```html
+<!-- Example 1: Track a File Download -->
+<a href="/downloads/guide.pdf" onclick="logEvent('File Download', 'User downloaded the User_Guide.pdf document')">
+    Download User Guide
+</a>
+
+<!-- Example 2: Track a crucial checkout button click -->
+<button onclick="logEvent('Checkout Init', 'User clicked the Checkout button')">
+    Proceed to Payment
+</button>
+```
+
+> [!NOTE]
+> Since this endpoint is guarded by Laravel's standard web middleware, you must include the `X-CSRF-TOKEN` header, and a `<meta name="csrf-token" content="{{ csrf_token() }}">` tag should exist in your HTML layout header.
 
 ### 🔐 Custom Dashboard Authorization Gate
 By default, the Auditify dashboard uses your default web authentication and guards. To define custom access control, register an authorization callback in the `boot` method of your `AppServiceProvider.php`:
