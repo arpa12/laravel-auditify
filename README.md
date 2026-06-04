@@ -264,8 +264,8 @@ The package features a comprehensive PHPUnit test suite covering models, middlew
 
 Clone the repository and install development dependencies:
 ```bash
-git clone https://github.com/arpanihan/auditify.git
-cd auditify
+git clone https://github.com/arpa12/laravel-auditify.git
+cd laravel-auditify
 composer install
 ```
 
