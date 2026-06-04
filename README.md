@@ -38,6 +38,7 @@ Unlike standard logging libraries, Auditify uses a **decoupled database design**
 
 | Laravel | PHP |
 |---|---|
+| 13.x | 8.3 – 8.4 |
 | 11.x, 12.x | 8.2 – 8.4 |
 | 10.x | 8.2 – 8.3 |
 
