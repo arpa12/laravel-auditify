@@ -241,6 +241,33 @@ class LoggingTest extends TestCase
         ]);
     }
 
+    public function test_security_alert_triggers_on_failed_login_with_emails_threshold(): void
+    {
+        for ($i = 0; $i < 3; $i++) {
+            Auditify::logActivity('Failed Login: user@example.com');
+        }
+
+        $this->assertDatabaseHas('audit_security_logs', [
+            'title' => 'Multiple Failed Logins',
+            'severity' => 'high',
+        ]);
+    }
+
+    public function test_security_alert_triggers_on_failed_login_by_ip_threshold(): void
+    {
+        // Set request IP
+        request()->server->set('REMOTE_ADDR', '192.168.1.5');
+
+        for ($i = 0; $i < 3; $i++) {
+            Auditify::logActivity('Failed Login: user' . $i . '@example.com');
+        }
+
+        $this->assertDatabaseHas('audit_security_logs', [
+            'title' => 'Multiple Failed Logins',
+            'severity' => 'high',
+        ]);
+    }
+
     public function test_notification_sent_on_high_severity_alert(): void
     {
         config(['auditify.alerts.enabled' => true]);

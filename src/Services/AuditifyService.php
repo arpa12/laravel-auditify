@@ -374,8 +374,19 @@ class AuditifyService
             $timeframeMinutes = config('auditify.alerts.thresholds.failed_logins_timeframe', 5);
             $timeframe = now()->subMinutes($timeframeMinutes);
 
-            $failedCount = ActivityLog::where('activity', 'Failed Login')
-                ->where('created_at', '>=', $timeframe)
+            $failedCount = ActivityLog::where('created_at', '>=', $timeframe)
+                ->where(function ($query) use ($log) {
+                    $query->where('activity', $log->activity);
+                    if ($log->ip_address) {
+                        $query->orWhere(function ($q) use ($log) {
+                            $q->where('ip_address', $log->ip_address)
+                              ->where(function ($subQ) {
+                                  $subQ->where('activity', 'Failed Login')
+                                       ->orWhere('activity', 'like', 'Failed Login:%');
+                              });
+                        });
+                    }
+                })
                 ->count();
 
             if ($failedCount >= $threshold) {
