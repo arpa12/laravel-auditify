@@ -420,4 +420,54 @@ class AuditifyService
                 ->notify(new SuspiciousActivityAlert($log, $log->description));
         }
     }
+
+    /**
+     * Audit a model event centrally.
+     */
+    public function auditModel(string $action, \Illuminate\Database\Eloquent\Model $model): void
+    {
+        $action = strtolower($action);
+        $oldValues = [];
+        $newValues = [];
+
+        $actionMap = [
+            'created' => 'CREATE',
+            'updated' => 'UPDATE',
+            'deleted' => 'DELETE',
+            'restored' => 'RESTORE',
+        ];
+
+        $mappedAction = $actionMap[$action] ?? strtoupper($action);
+
+        if ($action === 'updated') {
+            $changes = $model->getChanges();
+            foreach ($changes as $field => $newValue) {
+                if ($field === 'updated_at') {
+                    continue;
+                }
+                $oldValues[$field] = $model->getOriginal($field);
+                $newValues[$field] = $newValue;
+            }
+
+            if (empty($newValues)) {
+                return;
+            }
+        } elseif ($action === 'created') {
+            $newValues = $model->toArray();
+        } elseif ($action === 'deleted') {
+            $oldValues = $model->toArray();
+        } elseif ($action === 'restored') {
+            $newValues = $model->toArray();
+        } else {
+            return;
+        }
+
+        $this->logAction(
+            $mappedAction,
+            class_basename($model),
+            class_basename($model) . ' ' . $action,
+            $oldValues,
+            $newValues
+        );
+    }
 }

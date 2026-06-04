@@ -60,8 +60,10 @@ Run the installation command to publish configuration files, copy migrations, an
 php artisan auditify:install
 ```
 
-### 3. Add the Trait to Your Models
-Add the `Auditable` trait to any Eloquent model you want to track changes for:
+### 3. (Optional) Selective Model Auditing
+By default, Auditify automatically audits **all Eloquent models** globally without any manual setup. 
+
+However, if you turn off global auditing (`'auto_audit_models' => false`) and prefer to manually select which models to audit, add the `Auditable` trait:
 ```php
 namespace App\Models;
 
@@ -110,6 +112,12 @@ return [
     // Automatic tracking configurations
     'track_auth_events' => true, // Login, Logout, Failed logins
     'track_page_visits' => true, // Page visits
+
+    // Global model auditing
+    'auto_audit_models' => true, // Tracks all model lifecycle changes globally
+    'exclude_models' => [        // Model classes to exclude from global auditing
+        // App\Models\Session::class,
+    ],
 
     // Firewall scanning
     'xss_protection' => [
@@ -186,15 +194,17 @@ If you have pages that require rich text input (e.g. admin markdown or HTML edit
 ],
 ```
 
-### 🔌 Frontend Event Logging API
+### 🔌 Frontend Event Logging API (Optional)
 
-While Auditify automatically logs backend events (such as database changes and page visits), it cannot capture client-side user interactions (like button clicks, file downloads, or modal views) on its own. 
+> [!NOTE]
+> **What is this for?**
+> Standard backend code (like Laravel/PHP) cannot see what happens inside the user's browser. Out-of-the-box, it cannot track when a user clicks a button, closes a modal, or downloads a file.
+> 
+> This API provides a built-in route (`/auditify/api/events`) so you can easily send browser actions straight into your **Activity Logs** via JavaScript—without needing to write your own custom API controllers and routes. You can ignore this if you don't need to track frontend actions.
 
-Auditify provides a built-in endpoint `/auditify/api/events` to bridge this gap. You can send a `POST` request from your frontend JavaScript to log client-side actions directly into your **Activity Logs**. Auditify will automatically associate these logs with the active authenticated user, their IP address, and their browser user agent.
+#### How to use it:
 
-#### Example Usage
-
-1. **Create a reusable JavaScript helper** to handle the `POST` request (which automatically forwards the Laravel CSRF token):
+1. **Create a reusable JavaScript helper** to send a `POST` request (which automatically attaches Laravel's CSRF security token):
 
 ```javascript
 function logEvent(eventName, description) {
@@ -215,7 +225,7 @@ function logEvent(eventName, description) {
 }
 ```
 
-2. **Trigger it on user actions** (e.g., clicking a button or downloading a file):
+2. **Trigger it on user actions** (like clicking a button or a download link):
 
 ```html
 <!-- Example 1: Track a File Download -->
@@ -223,24 +233,47 @@ function logEvent(eventName, description) {
     Download User Guide
 </a>
 
-<!-- Example 2: Track a crucial checkout button click -->
+<!-- Example 2: Track a checkout button click -->
 <button onclick="logEvent('Checkout Init', 'User clicked the Checkout button')">
     Proceed to Payment
 </button>
 ```
 
-> [!NOTE]
-> Since this endpoint is guarded by Laravel's standard web middleware, you must include the `X-CSRF-TOKEN` header, and a `<meta name="csrf-token" content="{{ csrf_token() }}">` tag should exist in your HTML layout header.
+#### ⚛️ Vue & React Integration (SPAs)
+If your application uses a frontend framework like React or Vue.js:
+- **Same-domain or Laravel Inertia**: You can call the `/auditify/api/events` endpoint directly using `axios` or `fetch`. Session cookies and CSRF security are handled automatically.
+- **Decoupled Setup (Different Domains)**: If your React/Vue frontend is hosted separately from your Laravel API:
+  1. Add your frontend domain to the allowed origins list in Laravel's CORS configuration (`config/cors.php`).
+  2. Authenticate requests via Laravel Sanctum or standard authorization headers so Auditify can link the logged events to the correct user.
 
-### 🔐 Custom Dashboard Authorization Gate
-By default, the Auditify dashboard uses your default web authentication and guards. To define custom access control, register an authorization callback in the `boot` method of your `AppServiceProvider.php`:
+*Example using Axios (React/Vue):*
+```javascript
+import axios from 'axios';
+
+axios.post('/auditify/api/events', {
+    event_name: 'Checkout Init',
+    description: 'User clicked the Checkout button'
+});
+```
+
+---
+
+### 🔐 Custom Dashboard Authorization Gate (Highly Recommended)
+
+> [!WARNING]
+> **What is this for?**
+> The Auditify dashboard (`/auditify`) displays highly sensitive database logs, security threat alerts, and user IP addresses. For security reasons, you should restrict access so that regular users cannot view it.
+> 
+> Use this authorization gate to lock the dashboard down to administrators or super-admins only.
+
+To configure access control, register an authorization gate inside the `boot` method of your `app/Providers/AppServiceProvider.php`:
 
 ```php
 use Auditify\Facades\Auditify;
 
 public function boot()
 {
-    // Restrict dashboard to Super Admins only
+    // Restrict dashboard access to Super Admins only
     Auditify::auth(function ($request) {
         return $request->user() && $request->user()->hasRole('super-admin');
     });

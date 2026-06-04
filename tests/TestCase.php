@@ -41,6 +41,7 @@ abstract class TestCase extends OrchestraTestCase
         // Enforce configurations for consistent testing
         $app['config']->set('auditify.route_prefix', 'auditify');
         $app['config']->set('auditify.authorization.enabled', false);
+        $app['config']->set('auditify.auto_audit_models', false);
     }
 
     protected function setUpDatabase($app)
@@ -61,6 +62,13 @@ abstract class TestCase extends OrchestraTestCase
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
+            $table->timestamps();
+        });
+
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->text('content')->nullable();
             $table->timestamps();
         });
     }

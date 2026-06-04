@@ -73,6 +73,48 @@ class AuditifyServiceProvider extends ServiceProvider
             });
         }
 
+        // Centralized global wildcard model auditing
+        Event::listen('eloquent.*', function (string $event, array $data) {
+            if (!config('auditify.auto_audit_models', true)) {
+                return;
+            }
+
+            // Laravel dispatches events like "eloquent.created: App\Models\User"
+            if (!str_contains($event, ':')) {
+                return;
+            }
+
+            [$eventName, $modelClass] = explode(':', $event, 2);
+            $modelClass = trim($modelClass);
+
+            // Extract action (created, updated, deleted, restored)
+            $action = str_replace('eloquent.', '', $eventName);
+            if (!in_array($action, ['created', 'updated', 'deleted', 'restored'])) {
+                return;
+            }
+
+            $model = $data[0] ?? null;
+            if ($model instanceof \Illuminate\Database\Eloquent\Model) {
+                // Prevent infinite loops by excluding Auditify log models
+                if (str_starts_with($modelClass, 'Auditify\\Models\\')) {
+                    return;
+                }
+
+                // Exclude models specified in config
+                $exclusions = config('auditify.exclude_models', []);
+                if (in_array($modelClass, $exclusions)) {
+                    return;
+                }
+
+                // Exclude models that already use the Auditable trait to avoid double logging
+                if (in_array('Auditify\\Traits\\Auditable', class_uses_recursive($model))) {
+                    return;
+                }
+
+                Auditify::auditModel($action, $model);
+            }
+        });
+
         // Register TrackPageVisits & BlockXssAttacks middlewares to the 'web' group
         if ($this->app->bound(\Illuminate\Contracts\Http\Kernel::class)) {
             $this->app->make(\Illuminate\Contracts\Http\Kernel::class)->appendMiddlewareToGroup('web', TrackPageVisits::class);

@@ -455,4 +455,76 @@ class LoggingTest extends TestCase
         $this->assertEquals(999, $actionLog->user_id);
         $this->assertEquals('App\Models\CustomUser', $actionLog->user_type);
     }
+
+    public function test_global_wildcard_auditing_logs_model_events_automatically(): void
+    {
+        // Enable global auditing
+        config(['auditify.auto_audit_models' => true]);
+
+        // 1. Test CREATE
+        $post = \Auditify\Tests\Models\Post::create([
+            'title' => 'Global Auditing Title',
+            'content' => 'Global Auditing Content',
+        ]);
+
+        $this->assertDatabaseHas('audit_action_logs', [
+            'action' => 'CREATE',
+            'module' => 'Post',
+            'description' => 'Post created',
+        ]);
+
+        // 2. Test UPDATE
+        $post->update([
+            'title' => 'Updated Global Title',
+        ]);
+
+        $this->assertDatabaseHas('audit_action_logs', [
+            'action' => 'UPDATE',
+            'module' => 'Post',
+            'description' => 'Post updated',
+        ]);
+
+        // 3. Test DELETE
+        $post->delete();
+
+        $this->assertDatabaseHas('audit_action_logs', [
+            'action' => 'DELETE',
+            'module' => 'Post',
+            'description' => 'Post deleted',
+        ]);
+    }
+
+    public function test_global_wildcard_auditing_respects_exclusions(): void
+    {
+        // Exclude Post model
+        config([
+            'auditify.auto_audit_models' => true,
+            'auditify.exclude_models' => [\Auditify\Tests\Models\Post::class]
+        ]);
+
+        \Auditify\Tests\Models\Post::create([
+            'title' => 'Excluded Post Title',
+        ]);
+
+        $this->assertDatabaseMissing('audit_action_logs', [
+            'module' => 'Post',
+        ]);
+    }
+
+    public function test_global_wildcard_auditing_prevents_double_logging_with_trait(): void
+    {
+        config(['auditify.auto_audit_models' => true]);
+
+        // Create a post using the model with the Auditable trait
+        $post = \Auditify\Tests\Models\AuditablePost::create([
+            'title' => 'Trait Post Title',
+        ]);
+
+        // Ensure there is only exactly 1 CREATE action log (either from trait or wildcard, not both)
+        $count = \Auditify\Models\ActionLog::where('action', 'CREATE')
+            ->where('module', 'AuditablePost')
+            ->count();
+
+        $this->assertEquals(1, $count);
+    }
 }

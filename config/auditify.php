@@ -51,6 +51,13 @@ return [
         ],
     ],
 
+    'auto_audit_models' => true,
+
+    'exclude_models' => [
+        // List model classes to exclude from global auditing here, e.g.:
+        // App\Models\Session::class,
+    ],
+
     'pruning' => [
         'keep_days' => 90,
     ],
