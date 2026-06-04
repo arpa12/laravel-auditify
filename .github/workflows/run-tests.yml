@@ -21,6 +21,9 @@ jobs:
             testbench: 10.*
           - laravel: 13.*
             testbench: 11.*
+        exclude:
+          - php: 8.2
+            laravel: 13.*
 
     name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }}
 
@@ -36,12 +39,12 @@ jobs:
           coverage: none
 
       - name: Install dependencies
+        env:
+          COMPOSER_NO_BLOCKING: 1
         run: |
-          cd packages/arpanihan/auditify
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --dev --no-interaction --no-update
           composer update --prefer-dist --no-interaction
 
       - name: Execute tests
         run: |
-          cd packages/arpanihan/auditify
           vendor/bin/phpunit -c phpunit.xml
