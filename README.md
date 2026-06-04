@@ -10,6 +10,8 @@
 
 **Auditify** is an easy-to-use, high-performance audit logging and threat detection package for Laravel. 
 
+🔗 **Official Landing Page & Demo:** [arpa12.github.io/laravel-auditify-landingPage](https://arpa12.github.io/laravel-auditify-landingPage/)
+
 Unlike standard logging libraries, Auditify uses a **decoupled database design** to separate logs into three distinct tables. This optimizes database table indexing, reduces write congestion, and guarantees clean scale organization as your application grows.
 
 ---
