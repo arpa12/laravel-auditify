@@ -47,97 +47,6 @@ Unlike standard logging libraries, Auditify uses a **decoupled database design**
 
 ---
 
-## 📦 Installation
-
-### 1. Install via Composer
-Run this command in your project root:
-```bash
-composer require arpanihan/auditify
-```
-
-### 2. Run the Installer
-Run the installation command to publish configuration files, copy migrations, and set up your database automatically:
-```bash
-php artisan auditify:install
-```
-
-### 3. (Optional) Selective Model Auditing
-By default, Auditify automatically audits **all Eloquent models** globally without any manual setup. 
-
-However, if you turn off global auditing (`'auto_audit_models' => false`) and prefer to manually select which models to audit, add the `Auditable` trait:
-```php
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-use Auditify\Traits\Auditable;
-
-class Product extends Model
-{
-    use Auditable;
-}
-```
-
----
-
-## ⚙️ Configuration
-
-After publishing, customize your settings in `config/auditify.php`:
-
-```php
-return [
-    // Base URL route prefix: https://your-domain.com/auditify
-    'route_prefix' => 'auditify',
-
-    // Dashboard visual layout theme: 'dark' or 'light'
-    'theme' => 'dark',
-
-    // Middlewares applied to the dashboard routes
-    'middleware' => [
-        'web',
-    ],
-
-    // Log entries shown per page
-    'pagination' => 20,
-
-    // Track details
-    'track_ip' => true,
-    'track_user_agent' => true,
-    'track_url' => true,
-
-    // Authorization configuration
-    'authorization' => [
-        'enabled' => false,
-        'gate' => 'view-auditify',
-    ],
-
-    // Automatic tracking configurations
-    'track_auth_events' => true, // Login, Logout, Failed logins
-    'track_page_visits' => true, // Page visits
-
-    // Global model auditing
-    'auto_audit_models' => true, // Tracks all model lifecycle changes globally
-    'exclude_models' => [        // Model classes to exclude from global auditing
-        // App\Models\Session::class,
-    ],
-
-    // Firewall scanning
-    'xss_protection' => [
-        'enabled' => true,
-        'block' => true,         // Abort requests with HTTP 403 when script is found
-        'exclude_routes' => [
-            // 'admin/rich-text/*',
-        ],
-    ],
-
-    // Pruning configuration
-    'pruning' => [
-        'keep_days' => 90,       // Default age in days for keeping historical log rows
-    ],
-];
-```
-
----
-
 ## 🚀 Features
 
 ### 📊 Dashboard
@@ -405,8 +314,6 @@ const handleUpgrade = async () => {
 </script>
 ```
 
----
-
 ### 🔐 Admin-Only Access & Custom Authorization Gate
 
 > [!IMPORTANT]
@@ -436,6 +343,97 @@ public function boot()
         // return $request->user() && str_ends_with($request->user()->email, '@yourcompany.com');
     });
 }
+```
+
+---
+
+## 📦 Installation
+
+### 1. Install via Composer
+Run this command in your project root:
+```bash
+composer require arpanihan/auditify
+```
+
+### 2. Run the Installer
+Run the installation command to publish configuration files, copy migrations, and set up your database automatically:
+```bash
+php artisan auditify:install
+```
+
+### 3. (Optional) Selective Model Auditing
+By default, Auditify automatically audits **all Eloquent models** globally without any manual setup. 
+
+However, if you turn off global auditing (`'auto_audit_models' => false`) and prefer to manually select which models to audit, add the `Auditable` trait:
+```php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Auditify\Traits\Auditable;
+
+class Product extends Model
+{
+    use Auditable;
+}
+```
+
+---
+
+## ⚙️ Configuration
+
+After publishing, customize your settings in `config/auditify.php`:
+
+```php
+return [
+    // Base URL route prefix: https://your-domain.com/auditify
+    'route_prefix' => 'auditify',
+
+    // Dashboard visual layout theme: 'dark' or 'light'
+    'theme' => 'dark',
+
+    // Middlewares applied to the dashboard routes
+    'middleware' => [
+        'web',
+    ],
+
+    // Log entries shown per page
+    'pagination' => 20,
+
+    // Track details
+    'track_ip' => true,
+    'track_user_agent' => true,
+    'track_url' => true,
+
+    // Authorization configuration
+    'authorization' => [
+        'enabled' => false,
+        'gate' => 'view-auditify',
+    ],
+
+    // Automatic tracking configurations
+    'track_auth_events' => true, // Login, Logout, Failed logins
+    'track_page_visits' => true, // Page visits
+
+    // Global model auditing
+    'auto_audit_models' => true, // Tracks all model lifecycle changes globally
+    'exclude_models' => [        // Model classes to exclude from global auditing
+        // App\Models\Session::class,
+    ],
+
+    // Firewall scanning
+    'xss_protection' => [
+        'enabled' => true,
+        'block' => true,         // Abort requests with HTTP 403 when script is found
+        'exclude_routes' => [
+            // 'admin/rich-text/*',
+        ],
+    ],
+
+    // Pruning configuration
+    'pruning' => [
+        'keep_days' => 90,       // Default age in days for keeping historical log rows
+    ],
+];
 ```
 
 ---
