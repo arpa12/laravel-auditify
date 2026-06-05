@@ -495,10 +495,17 @@ Auditify::logSecurity(
 
 ### 2. Pausing Auditing (Seeders & Batch Imports)
 
-When running data migrations, database seeders, or large CSV imports, you might want to temporarily disable database logs to prevent database write congestion or logging spam.
+When running data migrations, database seeders, or large CSV imports, you might want to temporarily disable database logs:
+*   **Prevent Database Congestion (Performance):** Auditing bulk inserts doubles database queries (100k records = 200k queries). Pausing logs prevents database lockups and speeds up imports.
+*   **Prevent Table Bloat (Log Spam):** Seeders generate fake mock data. Pausing auditing prevents these fake records from filling up your audit log tables and slowing down search speeds.
 
-#### Option A: Running a closure without audits
-This helper automatically pauses auditing for the duration of the callback execution and safely restores the previous auditing state:
+#### Option A: Running a closure without audits (Recommended)
+This helper automatically pauses auditing for the duration of the callback execution and safely restores the previous auditing state.
+
+> [!TIP]
+> **Why Option A is recommended (Exception Safe):**
+> If an error occurs inside your import/seeder logic, this helper uses an underlying PHP `finally` block to **guarantee** that auditing is safely re-enabled for all subsequent requests.
+
 ```php
 use Auditify\Facades\Auditify;
 
@@ -509,6 +516,12 @@ Auditify::withoutAuditing(function () {
 ```
 
 #### Option B: Manually toggle auditing
+Directly turns the auditing flag on or off.
+
+> [!WARNING]
+> **Use Option B with caution:**
+> If your code throws an exception after calling `disableAuditing()`, it will crash *before* reaching `enableAuditing()`, leaving auditing permanently disabled on that PHP worker/process. Only use this option when a closure structure cannot be used.
+
 ```php
 Auditify::disableAuditing();
 
