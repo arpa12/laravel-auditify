@@ -551,11 +551,13 @@ class OrderController extends Controller
 
 ### 2. Pausing Auditing (Seeders & Batch Imports)
 
-When running data migrations, database seeders, or large CSV imports, you might want to temporarily disable database logs:
+When running data migrations, database seeders, or large CSV imports, you should temporarily disable logging:
 *   **Prevent Database Congestion (Performance):** Auditing bulk inserts doubles database queries (100k records = 200k queries). Pausing logs prevents database lockups and speeds up imports.
 *   **Prevent Table Bloat (Log Spam):** Seeders generate fake mock data. Pausing auditing prevents these fake records from filling up your audit log tables and slowing down search speeds.
 
-#### Option A: Running a closure without audits (Recommended)
+#### Option A: Running a closure (Recommended for Seeders & Migrations)
+**Where to use:** In **`database/seeders/DatabaseSeeder.php`** or data migration files.
+
 This helper automatically pauses auditing for the duration of the callback execution and safely restores the previous auditing state.
 
 > [!TIP]
@@ -565,13 +567,16 @@ This helper automatically pauses auditing for the duration of the callback execu
 ```php
 use Auditify\Facades\Auditify;
 
+// Pauses auditing automatically for the duration of the callback function
 Auditify::withoutAuditing(function () {
-    // Run seeders or large batch imports without triggering any audit logs
+    // Generate 1,000 dummy articles silently without log spam
     Article::factory()->count(1000)->create();
 });
 ```
 
-#### Option B: Manually toggle auditing
+#### Option B: Manually toggle auditing (Recommended for Artisan Commands & Test Suites)
+**Where to use:** In custom Artisan console commands (`app/Console/Commands/ImportData.php`) or PHPUnit test setups (`tests/TestCase.php`).
+
 Directly turns the auditing flag on or off.
 
 > [!WARNING]
@@ -579,10 +584,15 @@ Directly turns the auditing flag on or off.
 > If your code throws an exception after calling `disableAuditing()`, it will crash *before* reaching `enableAuditing()`, leaving auditing permanently disabled on that PHP worker/process. Only use this option when a closure structure cannot be used.
 
 ```php
+use Auditify\Facades\Auditify;
+
+// 1. Manually disable auditing
 Auditify::disableAuditing();
 
-// Perform operations without audits...
+// 2. Perform sequential operations...
+User::insert($massiveCsvData);
 
+// 3. Manually re-enable auditing
 Auditify::enableAuditing();
 ```
 
