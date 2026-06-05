@@ -862,7 +862,7 @@
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
                     </svg>
                 </div>
-                <span class="brand-name">Auditify <span class="brand-badge">v2.0</span></span>
+                <span class="brand-name">Auditify <span class="brand-badge">v1.0.0</span></span>
             </a>
 
             <nav style="flex-grow: 1;">
@@ -957,7 +957,8 @@
                     @endphp
 
                     <!-- Time Format Selector Dropdown -->
-                    <div style="position: relative; display: inline-block; margin-right: 8px;">
+                    <div style="position: relative; display: inline-flex; align-items: center; gap: 8px; margin-right: 8px;">
+                        <span style="font-size: 12px; font-weight: 500; color: var(--text-secondary); white-space: nowrap;">Time Format:</span>
                         <select id="timeFormatSelect" onchange="changeTimeFormat(this.value)" class="bell-btn" style="width: auto; padding: 0 28px 0 12px; font-size: 12px; font-weight: 600; font-family: var(--font-sans); cursor: pointer; text-align: center; border-radius: 8px; appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%25239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 10px top 50%; background-size: 8px auto;">
                             <option value="24h">24 Hour</option>
                             <option value="12h">12 Hour</option>
