@@ -18,8 +18,6 @@ Unlike standard logging libraries, Auditify uses a **decoupled database design**
 
 ## Table of Contents
 * [Requirements](#-requirements)
-* [Installation](#-installation)
-* [Configuration](#-configuration)
 * [Features](#-features)
   * [Dashboard](#-dashboard)
   * [Reports & Analytics Module](#-reports--analytics-module)
@@ -28,6 +26,8 @@ Unlike standard logging libraries, Auditify uses a **decoupled database design**
   * [XSS Attack Shield](#-xss-attack-shield)
   * [Frontend Event Logging API](#-frontend-event-logging-api-optional)
   * [Admin-Only Access & Custom Authorization Gate](#-admin-only-access--custom-authorization-gate)
+* [Installation](#-installation)
+* [Configuration](#-configuration)
 * [Manual Logging & Helper Methods](#-manual-logging--helper-methods)
 * [Artisan Commands](#%EF%B8%8F-artisan-commands)
 * [Routes Reference](#-routes-reference)
