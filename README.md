@@ -407,24 +407,33 @@ const handleUpgrade = async () => {
 
 ---
 
-### 🔐 Custom Dashboard Authorization Gate (Highly Recommended)
+### 🔐 Admin-Only Access & Custom Authorization Gate
 
-> [!WARNING]
-> **What is this for?**
-> The Auditify dashboard (`/auditify`) displays highly sensitive database logs, security threat alerts, and user IP addresses. For security reasons, you should restrict access so that regular users cannot view it.
-> 
-> Use this authorization gate to lock the dashboard down to administrators or super-admins only.
+> [!IMPORTANT]
+> **Who should access the logs?**
+> The Auditify log database and visual dashboard (`/auditify`) contain highly sensitive information including user IP addresses, request payloads, model modifications, and security alert histories.
+>
+> **Regular application users must never have access to this package.** It is designed exclusively for system administrators, super-admins, and security officers.
 
-To configure access control, register an authorization gate inside the `boot` method of your `app/Providers/AppServiceProvider.php`:
+By default, the package enables access control if configured in `config/auditify.php`. **You should register an authorization callback** inside your application so developers can custom-define exactly who is classified as an authorized admin.
+
+To restrict dashboard views and log downloads to administrators only, register an authorization callback inside the `boot` method of your `app/Providers/AppServiceProvider.php`:
 
 ```php
 use Auditify\Facades\Auditify;
 
 public function boot()
 {
-    // Restrict dashboard access to Super Admins only
+    // Restrict all Auditify dashboard and API routes to Admin users
     Auditify::auth(function ($request) {
-        return $request->user() && $request->user()->hasRole('super-admin');
+        // Option A: Check user role (e.g. if using Spatie Role package)
+        return $request->user() && $request->user()->hasRole('admin');
+
+        // Option B: Check simple is_admin database flag
+        // return $request->user() && $request->user()->is_admin;
+
+        // Option C: Check a specific company email domain
+        // return $request->user() && str_ends_with($request->user()->email, '@yourcompany.com');
     });
 }
 ```
