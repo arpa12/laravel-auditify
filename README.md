@@ -444,6 +444,13 @@ public function boot()
 
 You can manually trigger Auditify logs or temporarily pause auditing from your own Laravel controllers, background jobs, or seeders using the `Auditify` facade.
 
+> [!TIP]
+> **Why use manual logging?**
+> * **Capture Intent over CRUD:** Automated auditing only tracks database changes (inserts/updates). It cannot know when a user performs a non-CRUD action like downloading a PDF report, requesting a password reset, or opening a modal.
+> * **Standardize Multi-step Workflows:** Instead of cluttering logs with 10 automated database change entries during a checkout flow, you can pause automatic logging and write a single, clean entry (e.g., `User Completed Purchase`).
+> * **Log Custom Threat Metrics:** Manually document custom suspicious behaviors (like rate-limit hits, coupon code abuse, or restricted API probes) using `Auditify::logSecurity`.
+> * **Optimize Seeding & Imports:** Turn off auditing during massive database seeding or CSV user imports to prevent database write congestion, performance lags, and log spam.
+
 ### 1. Manual Log Generation
 
 Import the facade in your file:
