@@ -491,6 +491,62 @@ Auditify::logSecurity(
 );
 ```
 
+#### Real-World Controller Example
+Here is a practical example of how to implement manual logging inside a standard Laravel controller, complete with code comments:
+
+```php
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Order;
+use Auditify\Facades\Auditify; // Import the Auditify facade
+
+class OrderController extends Controller
+{
+    /**
+     * Cancel a customer order and log the audit trail.
+     */
+    public function cancel(Request $request, $id)
+    {
+        // 1. Retrieve the order record from the database
+        $order = Order::findOrFail($id);
+
+        // Capture the original status for audit comparison
+        $oldStatus = $order->status;
+
+        // 2. Perform the cancellation business logic
+        $order->update([
+            'status' => 'cancelled',
+            'cancelled_at' => now(),
+            'cancellation_reason' => $request->input('reason')
+        ]);
+
+        // 3. Manually Log a database Action showing the status transition
+        Auditify::logAction(
+            action: 'CANCEL_ORDER',
+            module: 'Order',
+            description: "Order #{$order->id} cancelled by user due to: " . $request->input('reason'),
+            oldValues: ['status' => $oldStatus],
+            newValues: ['status' => 'cancelled'],
+            userId: auth()->id(), // Associate log with the logged-in administrator
+            subject: $order      // Link the polymorphic subject relation to this order model
+        );
+
+        // 4. Log a general user activity for dashboard stats tracking
+        Auditify::logActivity(
+            activity: 'Cancelled Order',
+            properties: [
+                'order_id' => $order->id,
+                'total_amount' => $order->total_price
+            ]
+        );
+
+        // 5. Send a redirect response back to the admin portal
+        return redirect()->back()->with('success', 'Order cancelled and action audited.');
+    }
+}
+```
+
 ---
 
 ### 2. Pausing Auditing (Seeders & Batch Imports)
