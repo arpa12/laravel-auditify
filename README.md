@@ -534,13 +534,22 @@ Auditify::enableAuditing();
 
 ## 🛠️ Artisan Commands
 
+Auditify provides dedicated commands to automate installation and database size optimization:
+
 | Command | Description |
 |---|---|
 | `auditify:install` | Runs migrations and publishes configuration files automatically. |
 | `auditify:prune {--days=}` | Deletes old audit log records older than N days (defaults to `keep_days` config value). |
 
-### Automated Database Pruning Setup
-To keep database tables small and performant, automate pruning by scheduling the command in `routes/console.php` (or `app/Console/Kernel.php`):
+### 1. Why use the commands?
+*   **`auditify:install` (Simpler Onboarding):** Eliminates manual setup. Rather than forcing developers to copy configurations, move migration files, and migrate tables separately, this sets up the entire package in a single terminal line.
+*   **`auditify:prune` (Optimize DB Speed & Storage):** High-traffic production systems generate millions of logs. Storing logs indefinitely slows down database queries, increases backup sizes, and increases storage costs. Pruning deletes outdated entries, ensuring instant dashboard rendering and compliance retention alignment (e.g., GDPR, SOC2).
+
+### 2. Automated Database Pruning Setup
+To keep database tables small and performant automatically, schedule the pruning command in your application's task scheduler in `routes/console.php` (or `app/Console/Kernel.php`):
+
+> [!TIP]
+> **Set It and Forget It:** Automating the pruning command to run daily ensures your database size remains constrained and healthy without manual administrator intervention. It is recommended to schedule it during low-traffic night hours.
 
 ```php
 use Illuminate\Support\Facades\Schedule;
