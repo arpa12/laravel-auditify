@@ -101,6 +101,24 @@ class AuditifyService
     }
 
     /**
+     * Mask sensitive values (like passwords/tokens) in array.
+     */
+    protected function maskSensitiveValues(array $values): array
+    {
+        $sensitiveKeys = config('auditify.sensitive_fields', ['password', 'password_confirmation', 'token', 'secret', 'card', 'cvv', 'ssn']);
+
+        return collect($values)->mapWithKeys(function ($value, $key) use ($sensitiveKeys) {
+            if (in_array(strtolower($key), $sensitiveKeys)) {
+                return [$key => '********'];
+            }
+            if (is_array($value)) {
+                return [$key => $this->maskSensitiveValues($value)];
+            }
+            return [$key => $value];
+        })->all();
+    }
+
+    /**
      * Log a database data change action (Module 1).
      */
     public function logAction(
@@ -109,7 +127,8 @@ class AuditifyService
         string $description,
         array $oldValues = [],
         array $newValues = [],
-        $userId = null
+        $userId = null,
+        $subject = null
     ): ActionLog {
         if (!$this->isAuditing()) {
             return new ActionLog();
@@ -129,14 +148,30 @@ class AuditifyService
                 : ($resolvedUserId ? config('auth.providers.users.model') : null);
         }
 
+        if ($subject instanceof \Illuminate\Database\Eloquent\Model) {
+            $resolvedSubjectId = $subject->getKey();
+            $resolvedSubjectType = get_class($subject);
+        } elseif (is_array($subject) && isset($subject['id'], $subject['type'])) {
+            $resolvedSubjectId = $subject['id'];
+            $resolvedSubjectType = $subject['type'];
+        } else {
+            $resolvedSubjectId = null;
+            $resolvedSubjectType = null;
+        }
+
+        $maskedOld = $this->maskSensitiveValues($oldValues);
+        $maskedNew = $this->maskSensitiveValues($newValues);
+
         $log = ActionLog::create([
             'user_id' => $resolvedUserId,
             'user_type' => $resolvedUserType,
+            'subject_id' => $resolvedSubjectId,
+            'subject_type' => $resolvedSubjectType,
             'action' => strtoupper($action),
             'module' => $module,
             'description' => $description,
-            'old_values' => !empty($oldValues) ? $oldValues : null,
-            'new_values' => !empty($newValues) ? $newValues : null,
+            'old_values' => !empty($maskedOld) ? $maskedOld : null,
+            'new_values' => !empty($maskedNew) ? $maskedNew : null,
             'ip_address' => request()->ip(),
             'url' => request()->fullUrl(),
             'user_agent' => request()->userAgent(),
@@ -154,7 +189,8 @@ class AuditifyService
     public function logActivity(
         string $activity,
         ?string $url = null,
-        $userId = null
+        $userId = null,
+        array $properties = []
     ): ActivityLog {
         if (!$this->isAuditing()) {
             return new ActivityLog();
@@ -178,6 +214,7 @@ class AuditifyService
             'user_id' => $resolvedUserId,
             'user_type' => $resolvedUserType,
             'activity' => $activity,
+            'properties' => $properties,
             'url' => $url ?? request()->fullUrl(),
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
@@ -198,7 +235,13 @@ class AuditifyService
         string $severity = 'medium',
         $userId = null,
         ?string $ipAddress = null,
-        ?string $userAgent = null
+        ?string $userAgent = null,
+        ?string $status = 'pending',
+        $resolvedAt = null,
+        ?string $resolutionNotes = null,
+        ?string $method = null,
+        ?string $routeName = null,
+        ?array $payload = null
     ): SecurityLog {
         if (!$this->isAuditing()) {
             return new SecurityLog();
@@ -230,6 +273,12 @@ class AuditifyService
             'title' => $title,
             'description' => $description,
             'is_read' => false,
+            'status' => $status ?? 'pending',
+            'resolved_at' => $resolvedAt,
+            'resolution_notes' => $resolutionNotes,
+            'method' => $method ?? request()->method(),
+            'route_name' => $routeName ?? (request()->route() ? request()->route()->getName() : null),
+            'payload' => $payload ?? $this->maskSensitiveValues(request()->except(config('auditify.sensitive_fields', ['password', 'password_confirmation', 'token', 'secret', 'card', 'cvv', 'ssn']))),
             'ip_address' => $ip,
             'user_agent' => $userAgent ?? request()->userAgent(),
         ]);
@@ -467,7 +516,9 @@ class AuditifyService
             class_basename($model),
             class_basename($model) . ' ' . $action,
             $oldValues,
-            $newValues
+            $newValues,
+            null,
+            $model
         );
     }
 }

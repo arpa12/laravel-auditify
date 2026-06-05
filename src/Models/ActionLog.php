@@ -19,4 +19,9 @@ class ActionLog extends Model
     {
         return $this->morphTo('user', 'user_type', 'user_id');
     }
+
+    public function subject()
+    {
+        return $this->morphTo('subject', 'subject_type', 'subject_id');
+    }
 }

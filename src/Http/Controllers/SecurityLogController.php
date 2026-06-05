@@ -140,6 +140,18 @@ class SecurityLogController
         );
     }
 
+    public function exportPdf()
+    {
+        \Auditify\Facades\Auditify::logActivity('Export Security Logs (PDF)');
+
+        $query = $this->buildFilterQuery()->with('user')->latest();
+        $logs = $query->limit(200)->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('auditify::reports.pdf-security', compact('logs'));
+
+        return $pdf->download('security_logs_' . now()->format('Ymd_His') . '.pdf');
+    }
+
     public function checkUnreadAlerts()
     {
         $unreadCount = SecurityLog::unread()->count();

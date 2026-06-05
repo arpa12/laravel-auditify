@@ -874,6 +874,7 @@
                         $isActionLogs = str_starts_with($currentPath, $prefix . '/action-logs');
                         $isActivityLogs = str_starts_with($currentPath, $prefix . '/activity-logs');
                         $isSecurityLogs = str_starts_with($currentPath, $prefix . '/security-logs');
+                        $isReports = str_starts_with($currentPath, $prefix . '/reports');
                         
                         $unreadSecurityCount = \Auditify\Models\SecurityLog::unread()->count();
                     @endphp
@@ -922,6 +923,17 @@
                             @if($unreadSecurityCount > 0)
                                 <span class="sidebar-badge">{{ $unreadSecurityCount }}</span>
                             @endif
+                        </a>
+                    </li>
+                    
+                    <!-- Reports -->
+                    <li class="nav-item {{ $isReports ? 'active' : '' }}">
+                        <a href="{{ url($prefix . '/reports') }}">
+                            <!-- Chart/Report Icon -->
+                            <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                            </svg>
+                            <span>Reports</span>
                         </a>
                     </li>
                 </ul>

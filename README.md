@@ -27,6 +27,7 @@ Unlike standard logging libraries, Auditify uses a **decoupled database design**
   * [XSS Attack Shield](#-xss-attack-shield)
   * [Frontend Event Logging API](#-frontend-event-logging-api)
   * [Custom Dashboard Authorization Gate](#-custom-dashboard-authorization-gate)
+* [Manual Logging & Helper Methods](#-manual-logging--helper-methods)
 * [Artisan Commands](#%EF%B8%8F-artisan-commands)
 * [Routes Reference](#-routes-reference)
 * [Testing](#-testing)
@@ -149,23 +150,68 @@ The main glassmorphic dashboard aggregates action logs, page visits, and threat 
 * **Top active users & top modified modules** — lists of most active user IDs and frequently changed models.
 * **Live recent logs** — lists of the most recent visitor actions and security alerts.
 
+### 📈 Reports & Analytics Module
+URL: `/auditify/reports`
+
+A comprehensive reporting panel offering detailed statistical breakdowns over custom timeframes (Last 7 Days, Last 30 Days, or Last 90 Days) featuring interactive Chart.js charts:
+* **Overview Analytics:** System log activity trends mapped using multi-line charts.
+* **Action Reports:** Actions by type (Doughnut Chart) and most changed models (Horizontal Bar Chart), coupled with a detailed database modifications table and CSV/Excel/PDF download options.
+* **Activity Reports:** Top visited pages/URLs (Horizontal Bar Chart) and peak activity hours (Bar Chart), coupled with a detailed activity table and CSV/Excel/PDF download options.
+* **Security Reports:** Alerts by severity (Doughnut Chart), top threat origin IPs (Bar Chart), and resolution status distribution (Pie Chart), coupled with a detailed security incident table and CSV/Excel/PDF download options.
+* **Format Exports:** Support for exporting timeframe-filtered reports in CSV, Excel (xlsx), and clean printable PDF formats.
+
 ### 🗄️ Decoupled Log Modules
-Auditify separates data logging into three target models under `Auditify\Models` to avoid write bottlenecks:
+Auditify separates data logging into three target models under `Auditify\Models` to avoid write bottlenecks. Here is the exact database schema and attributes captured for each log type:
 
 #### Action Logs (`ActionLog`)
 *   **Table Name**: `audit_action_logs`
-*   **Purpose**: Logs database modifications.
-*   **Captured Attributes**: Action type, model description, side-by-side attributes difference (`old_values` and `new_values` JSON structures), URL, user agent, IP address, and authenticated user.
+*   **Purpose**: Tracks Eloquent database modifications (inserts, updates, deletes, and restores).
+*   **Captured Attributes / Database Columns**:
+    *   `id` (BigInt, Primary Key)
+    *   `user_id` & `user_type` (Nullable Morphs) — Polymorphic relationship to the user making the database modification.
+    *   `subject_id` & `subject_type` (Nullable Morphs) — Polymorphic relationship to the actual model being modified.
+    *   `action` (String) — The query event (`created`, `updated`, `deleted`, `restored`).
+    *   `module` (String) — Name of the affected model module/class (e.g., `Post`, `User`, `Role`).
+    *   `description` (Text, Nullable) — Friendly readable log summary description.
+    *   `old_values` (JSON, Nullable) — Casted array of model attribute values before the operation.
+    *   `new_values` (JSON, Nullable) — Casted array of model attribute values after the operation.
+    *   `ip_address` (String, Nullable) — IP address of the client triggering the event.
+    *   `url` (Text, Nullable) — HTTP Request URL where the change originated.
+    *   `user_agent` (Text, Nullable) — HTTP User-Agent string.
+    *   `created_at` & `updated_at` (Timestamps)
 
 #### Activity Logs (`ActivityLog`)
 *   **Table Name**: `audit_activity_logs`
-*   **Purpose**: Logs user interaction, navigation, and auth events.
-*   **Captured Attributes**: Auth status events (logins, logouts, login failures), visited pages, page request URLs, user agent, IP address, and user ID.
+*   **Purpose**: Logs visitor requests, navigation, custom application actions, and auth flows.
+*   **Captured Attributes / Database Columns**:
+    *   `id` (BigInt, Primary Key)
+    *   `user_id` & `user_type` (Nullable Morphs) — Polymorphic relationship to the visitor (if authenticated).
+    *   `activity` (String) — The type of operation/activity (e.g., `Page Visit`, `Login`, `Logout`, `Failed Login`, or custom events).
+    *   `properties` (JSON, Nullable) — Casted array storing context metadata or custom event payloads.
+    *   `url` (Text, Nullable) — Request URL path.
+    *   `ip_address` (String, Nullable) — Visitor IP address.
+    *   `user_agent` (Text, Nullable) — Visitor User-Agent string.
+    *   `created_at` & `updated_at` (Timestamps)
 
 #### Security Logs (`SecurityLog`)
 *   **Table Name**: `audit_security_logs`
-*   **Purpose**: Logs security alerts triggered by the XSS firewall or threat engine.
-*   **Captured Attributes**: Alert title, threat severity (low, medium, high, critical), description, IP address, user agent, read status, and user ID.
+*   **Purpose**: Logs alerts generated by the XSS protection middleware, rate limits, or automated threat rules.
+*   **Captured Attributes / Database Columns**:
+    *   `id` (BigInt, Primary Key)
+    *   `user_id` & `user_type` (Nullable Morphs) — Polymorphic relationship to the user (if authenticated).
+    *   `severity` (String) — Alert priority (`low`, `medium`, `high`, `critical`).
+    *   `title` (String) — Brief name of the incident (e.g., `XSS Attack Blocked`, `Failed Logins Peak`).
+    *   `description` (Text, Nullable) — In-depth details regarding why the threat was flagged.
+    *   `is_read` (Boolean) — Read/unread toggle flag for admin dashboard alerts.
+    *   `status` (String) — Alert resolution state (`pending` or `resolved`).
+    *   `resolved_at` (DateTime, Nullable) — Timestamp when the incident was marked resolved/read.
+    *   `resolution_notes` (Text, Nullable) — Text explaining the resolution strategy.
+    *   `method` (String, Nullable) — Request HTTP method (`GET`, `POST`, etc.).
+    *   `route_name` (String, Nullable) — Named route where the attack/alert occurred.
+    *   `payload` (JSON, Nullable) — Casted request body payload parameters scanned by the security shield.
+    *   `ip_address` (String, Nullable) — Origin IP address of the incident.
+    *   `user_agent` (Text, Nullable) — Incident Client User-Agent.
+    *   `created_at` & `updated_at` (Timestamps)
 
 ### 📈 Real-Time Threat Engine
 Auditify automatically monitors activity logs and logs high-priority Security entries when rules are broken:
@@ -241,19 +287,122 @@ function logEvent(eventName, description) {
 
 #### ⚛️ Vue & React Integration (SPAs)
 If your application uses a frontend framework like React or Vue.js:
-- **Same-domain or Laravel Inertia**: You can call the `/auditify/api/events` endpoint directly using `axios` or `fetch`. Session cookies and CSRF security are handled automatically.
+- **Same-domain or Laravel Inertia**: You can call the `/auditify/api/events` endpoint directly using `axios` or `fetch`. Session cookies and CSRF security are handled automatically by the browser.
 - **Decoupled Setup (Different Domains)**: If your React/Vue frontend is hosted separately from your Laravel API:
   1. Add your frontend domain to the allowed origins list in Laravel's CORS configuration (`config/cors.php`).
   2. Authenticate requests via Laravel Sanctum or standard authorization headers so Auditify can link the logged events to the correct user.
 
-*Example using Axios (React/Vue):*
-```javascript
+##### ⚛️ React Component Example (using Axios)
+```jsx
+import React, { useState } from 'react';
 import axios from 'axios';
 
-axios.post('/auditify/api/events', {
-    event_name: 'Checkout Init',
-    description: 'User clicked the Checkout button'
-});
+// IMPORTANT: Enable session cookie sharing across domains if your frontend 
+// runs on a different port/subdomain from your Laravel backend (e.g. localhost:3000 vs localhost:8000).
+axios.defaults.withCredentials = true;
+
+// Configure this URL to match your Laravel application route
+const AUDITIFY_API_URL = 'http://localhost:8000/auditify/api/events';
+
+export default function UpgradeButton() {
+    // Track loading state to prevent double clicks and duplicate event logging
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleUpgrade = async () => {
+        setIsLoading(true);
+        try {
+            // 1. Run your standard application business logic (e.g. payment gateway checkout)
+            console.log("Upgrading plan...");
+
+            // 2. Fetch the CSRF validation token from the host HTML meta tag.
+            // Note: If running decoupled (CORS), you may need to fetch the token via Sanctum.
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
+            // 3. Log the frontend event directly to the Auditify package
+            await axios.post(AUDITIFY_API_URL, {
+                event_name: 'Upgrade Plan Clicked',
+                description: 'User initiated subscription upgrade to Gold tier.'
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken // Pass the CSRF token to pass Laravel's VerifyCsrfToken middleware
+                }
+            });
+
+            alert('Plan upgraded successfully and logged in Auditify!');
+        } catch (error) {
+            console.error('Error logging event to Auditify backend:', error);
+        } finally {
+            // Reset the loading state
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <button onClick={handleUpgrade} disabled={isLoading}>
+            {isLoading ? 'Processing...' : 'Upgrade to Gold Plan 🚀'}
+        </button>
+    );
+}
+```
+
+##### 💚 Vue 3 Component Example (using Fetch API)
+```vue
+<template>
+  <div class="pricing-card">
+    <!-- Bind disabled state to loading to prevent double submissions -->
+    <button @click="handleUpgrade" :disabled="isLoading">
+      {{ isLoading ? 'Processing...' : 'Upgrade to Gold Plan 🚀' }}
+    </button>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+// Reactive state to manage user action processing
+const isLoading = ref(false);
+
+// Configure this URL to match your Laravel application route
+const AUDITIFY_API_URL = 'http://localhost:8000/auditify/api/events';
+
+const handleUpgrade = async () => {
+  isLoading.value = true;
+  try {
+    // 1. Run your standard application business logic (e.g. payment gateway checkout)
+    console.log("Upgrading plan...");
+
+    // 2. Retrieve the CSRF token from the meta tag to authenticate the session request
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+    
+    // 3. Dispatch the event payload to the Auditify package logs endpoint
+    const response = await fetch(AUDITIFY_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': csrfToken // Pass the CSRF token to pass Laravel's VerifyCsrfToken middleware
+      },
+      body: JSON.stringify({
+        event_name: 'Upgrade Plan Clicked',
+        description: 'User initiated subscription upgrade to Gold tier in Vue application.'
+      })
+    });
+
+    if (response.ok) {
+      alert('Plan upgraded successfully and logged in Auditify!');
+    } else {
+      console.error('Auditify endpoint returned an error response:', await response.text());
+    }
+  } catch (error) {
+    console.error('Network error attempting to log event:', error);
+  } finally {
+    // Reset status
+    isLoading.value = false;
+  }
+};
+</script>
 ```
 
 ---
@@ -278,6 +427,78 @@ public function boot()
         return $request->user() && $request->user()->hasRole('super-admin');
     });
 }
+```
+
+---
+
+## 🔌 Manual Logging & Helper Methods
+
+You can manually trigger Auditify logs or temporarily pause auditing from your own Laravel controllers, background jobs, or seeders using the `Auditify` facade.
+
+### 1. Manual Log Generation
+
+Import the facade in your file:
+```php
+use Auditify\Facades\Auditify;
+```
+
+#### Manually Log a Database/Module Action
+```php
+Auditify::logAction(
+    action: 'PUBLISH',
+    module: 'Article',
+    description: 'User published a new article',
+    oldValues: ['status' => 'draft'],
+    newValues: ['status' => 'published'],
+    userId: auth()->id(), // optional, defaults to current authenticated user
+    subject: $article     // optional, polymorphic eloquent model instance
+);
+```
+
+#### Manually Log a User Activity
+```php
+Auditify::logActivity(
+    activity: 'Exported Reports (PDF)',
+    url: request()->fullUrl(), // optional, defaults to request URL
+    userId: auth()->id(),      // optional
+    properties: ['timeframe' => '30_days'] // optional metadata payload
+);
+```
+
+#### Manually Log a Security Alert
+```php
+Auditify::logSecurity(
+    title: 'Suspicious Endpoint Access',
+    description: 'Blocked access attempt to restricted legacy endpoint',
+    severity: 'high', // options: low, medium, high, critical
+    payload: request()->all() // optional JSON request context
+);
+```
+
+---
+
+### 2. Pausing Auditing (Seeders & Batch Imports)
+
+When running data migrations, database seeders, or large CSV imports, you might want to temporarily disable database logs to prevent database write congestion or logging spam.
+
+#### Option A: Running a closure without audits
+This helper automatically pauses auditing for the duration of the callback execution and safely restores the previous auditing state:
+```php
+use Auditify\Facades\Auditify;
+
+Auditify::withoutAuditing(function () {
+    // Run seeders or large batch imports without triggering any audit logs
+    Article::factory()->count(1000)->create();
+});
+```
+
+#### Option B: Manually toggle auditing
+```php
+Auditify::disableAuditing();
+
+// Perform operations without audits...
+
+Auditify::enableAuditing();
 ```
 
 ---
@@ -310,16 +531,20 @@ All routes are grouped under the configured `route_prefix` (default: `auditify`)
 | GET | `/action-logs/{id}` | `ActionLogController@show` | View details with side-by-side attributes difference |
 | GET | `/action-logs/export/csv` | `ActionLogController@exportCsv` | Export action logs in CSV format |
 | GET | `/action-logs/export/excel` | `ActionLogController@exportExcel` | Export action logs in Excel format |
+| GET | `/action-logs/export/pdf` | `ActionLogController@exportPdf` | Export action logs in PDF format |
 | GET | `/activity-logs` | `ActivityLogController@index` | View list of activity logs |
 | GET | `/activity-logs/export/csv` | `ActivityLogController@exportCsv` | Export activity logs in CSV format |
 | GET | `/activity-logs/export/excel` | `ActivityLogController@exportExcel` | Export activity logs in Excel format |
+| GET | `/activity-logs/export/pdf` | `ActivityLogController@exportPdf` | Export activity logs in PDF format |
 | GET | `/security-logs` | `SecurityLogController@index` | View list of security logs |
 | GET | `/security-logs/unread-check` | `SecurityLogController@checkUnreadAlerts` | Live alert poll check |
 | GET | `/security-logs/{id}` | `SecurityLogController@show` | View security log details |
 | POST | `/security-logs/{id}/read` | `SecurityLogController@markAsRead` | Toggle log read state |
 | GET | `/security-logs/export/csv` | `SecurityLogController@exportCsv` | Export security logs in CSV format |
 | GET | `/security-logs/export/excel` | `SecurityLogController@exportExcel` | Export security logs in Excel format |
+| GET | `/security-logs/export/pdf` | `SecurityLogController@exportPdf` | Export security logs in PDF format |
 | POST | `/api/events` | `ActivityLogController@storeFrontendEvent` | Frontend client-side interaction logging |
+| GET | `/reports` | `ReportController@index` | View detailed log analytics and reports |
 
 ---
 

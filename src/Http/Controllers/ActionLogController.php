@@ -140,4 +140,16 @@ class ActionLogController
             $fileName
         );
     }
+
+    public function exportPdf()
+    {
+        \Auditify\Facades\Auditify::logActivity('Export Action Logs (PDF)');
+
+        $query = $this->buildFilterQuery()->with('user')->latest();
+        $logs = $query->limit(200)->get(); // Limit PDF size
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('auditify::reports.pdf-action', compact('logs'));
+
+        return $pdf->download('action_logs_' . now()->format('Ymd_His') . '.pdf');
+    }
 }

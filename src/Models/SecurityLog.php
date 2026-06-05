@@ -12,6 +12,8 @@ class SecurityLog extends Model
 
     protected $casts = [
         'is_read' => 'boolean',
+        'resolved_at' => 'datetime',
+        'payload' => 'array',
     ];
 
     public function user()

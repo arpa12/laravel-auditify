@@ -14,7 +14,9 @@ trait Auditable
                 class_basename($model),
                 class_basename($model) . ' created',
                 [],
-                $model->toArray()
+                $model->toArray(),
+                null,
+                $model
             );
         });
 
@@ -40,7 +42,9 @@ trait Auditable
                 class_basename($model),
                 class_basename($model) . ' updated',
                 $oldValues,
-                $newValues
+                $newValues,
+                null,
+                $model
             );
         });
 
@@ -50,7 +54,9 @@ trait Auditable
                 class_basename($model),
                 class_basename($model) . ' deleted',
                 $model->toArray(),
-                []
+                [],
+                null,
+                $model
             );
         });
 
@@ -61,7 +67,9 @@ trait Auditable
                     class_basename($model),
                     class_basename($model) . ' restored',
                     [],
-                    $model->toArray()
+                    $model->toArray(),
+                    null,
+                    $model
                 );
             });
         }

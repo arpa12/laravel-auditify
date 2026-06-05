@@ -5,6 +5,7 @@ use Auditify\Http\Controllers\DashboardController;
 use Auditify\Http\Controllers\ActionLogController;
 use Auditify\Http\Controllers\ActivityLogController;
 use Auditify\Http\Controllers\SecurityLogController;
+use Auditify\Http\Controllers\ReportController;
 use Auditify\Http\Middleware\Authorize;
 
 $middleware = config('auditify.middleware', ['web']);
@@ -21,12 +22,14 @@ Route::middleware($middleware)
         Route::get('/action-logs', [ActionLogController::class, 'index']);
         Route::get('/action-logs/export/csv', [ActionLogController::class, 'exportCsv']);
         Route::get('/action-logs/export/excel', [ActionLogController::class, 'exportExcel']);
+        Route::get('/action-logs/export/pdf', [ActionLogController::class, 'exportPdf']);
         Route::get('/action-logs/{id}', [ActionLogController::class, 'show']);
 
         // Module 2: Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index']);
         Route::get('/activity-logs/export/csv', [ActivityLogController::class, 'exportCsv']);
         Route::get('/activity-logs/export/excel', [ActivityLogController::class, 'exportExcel']);
+        Route::get('/activity-logs/export/pdf', [ActivityLogController::class, 'exportPdf']);
 
         // Module 3: Security Logs
         Route::get('/security-logs', [SecurityLogController::class, 'index']);
@@ -35,8 +38,11 @@ Route::middleware($middleware)
         Route::post('/security-logs/{id}/read', [SecurityLogController::class, 'markAsRead']);
         Route::get('/security-logs/export/csv', [SecurityLogController::class, 'exportCsv']);
         Route::get('/security-logs/export/excel', [SecurityLogController::class, 'exportExcel']);
+        Route::get('/security-logs/export/pdf', [SecurityLogController::class, 'exportPdf']);
 
         // API Events (Module 2 Activity)
         Route::post('/api/events', [ActivityLogController::class, 'storeFrontendEvent']);
 
+        // Module 4: Reports
+        Route::get('/reports', [ReportController::class, 'index']);
     });

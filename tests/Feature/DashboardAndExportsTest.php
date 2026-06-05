@@ -182,4 +182,66 @@ class DashboardAndExportsTest extends TestCase
         $response = $this->actingAs($user)->get('/auditify');
         $response->assertStatus(200);
     }
+
+    public function test_reports_renders_successfully(): void
+    {
+        $user = User::create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->actingAs($user)->get('/auditify/reports');
+
+        $response->assertStatus(200);
+        $response->assertSee('Overview Analytics');
+        $response->assertSee('Action Reports');
+        $response->assertSee('Activity Reports');
+        $response->assertSee('Security Reports');
+        $response->assertSee('Last 30 Days');
+    }
+
+    public function test_pdf_exports_successfully(): void
+    {
+        $user = User::create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        // Create some sample data
+        ActionLog::create([
+            'user_id' => $user->id,
+            'action' => 'CREATE',
+            'module' => 'Project',
+            'description' => 'Test PDF Action',
+        ]);
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'activity' => 'Test PDF Activity',
+        ]);
+
+        SecurityLog::create([
+            'user_id' => $user->id,
+            'title' => 'Test PDF Security',
+            'description' => 'Incident detail',
+            'severity' => 'high',
+        ]);
+
+        // Action Logs PDF
+        $response = $this->actingAs($user)->get('/auditify/action-logs/export/pdf');
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+
+        // Activity Logs PDF
+        $response = $this->actingAs($user)->get('/auditify/activity-logs/export/pdf');
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+
+        // Security Logs PDF
+        $response = $this->actingAs($user)->get('/auditify/security-logs/export/pdf');
+        $response->assertStatus(200);
+        $response->assertHeader('Content-Type', 'application/pdf');
+    }
 }

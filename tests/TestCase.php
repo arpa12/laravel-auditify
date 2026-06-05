@@ -25,6 +25,7 @@ abstract class TestCase extends OrchestraTestCase
         return [
             AuditifyServiceProvider::class,
             ExcelServiceProvider::class,
+            \Barryvdh\DomPDF\ServiceProvider::class,
         ];
     }
 

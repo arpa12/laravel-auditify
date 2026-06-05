@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->nullableMorphs('user');
             $table->string('activity');
+            $table->json('properties')->nullable();
             $table->text('url')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('user_agent')->nullable();

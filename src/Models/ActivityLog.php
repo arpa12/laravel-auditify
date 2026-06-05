@@ -10,6 +10,10 @@ class ActivityLog extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'properties' => 'array',
+    ];
+
     public function user()
     {
         return $this->morphTo('user', 'user_type', 'user_id');

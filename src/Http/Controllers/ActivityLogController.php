@@ -148,4 +148,16 @@ class ActivityLogController
             $fileName
         );
     }
+
+    public function exportPdf()
+    {
+        \Auditify\Facades\Auditify::logActivity('Export Activity Logs (PDF)');
+
+        $query = $this->buildFilterQuery()->with('user')->latest();
+        $logs = $query->limit(200)->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('auditify::reports.pdf-activity', compact('logs'));
+
+        return $pdf->download('activity_logs_' . now()->format('Ymd_His') . '.pdf');
+    }
 }

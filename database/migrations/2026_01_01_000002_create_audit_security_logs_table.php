@@ -18,6 +18,12 @@ return new class extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->boolean('is_read')->default(false);
+            $table->string('status')->default('pending');
+            $table->timestamp('resolved_at')->nullable();
+            $table->text('resolution_notes')->nullable();
+            $table->string('method')->nullable();
+            $table->string('route_name')->nullable();
+            $table->json('payload')->nullable();
             $table->string('ip_address')->nullable();
             $table->text('user_agent')->nullable();
             $table->timestamps();
