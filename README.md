@@ -361,7 +361,14 @@ Run the installation command to publish configuration files, copy migrations, an
 php artisan auditify:install
 ```
 
-### 3. (Optional) Selective Model Auditing
+### 3. Access the Dashboard
+Once the installer completes successfully, open your web browser and navigate to the Auditify dashboard URL:
+```url
+http://your-domain.local/auditify
+```
+*(Note: If you change the `'route_prefix'` config setting inside `config/auditify.php`, this route URL will update accordingly).*
+
+### 4. (Optional) Selective Model Auditing
 By default, Auditify automatically audits **all Eloquent models** globally without any manual setup. 
 
 However, if you turn off global auditing (`'auto_audit_models' => false`) and prefer to manually select which models to audit, add the `Auditable` trait:
