@@ -360,8 +360,17 @@ Run the installation command to publish configuration files, copy migrations, an
 ```bash
 php artisan auditify:install
 ```
-
-### 3. Access the Dashboard
+### 3. Clear Application Cache
+After installation, clear all cached configuration, routes, views, and other cached data to ensure Auditify loads the latest settings:
+```bash
+php artisan optimize:clear
+```
+### 4. Start the Laravel Development Server
+If your application is not already running, start the Laravel development server:
+```bash
+php artisan serve
+```
+### 5. Access the Dashboard
 Once the installer completes successfully, open your web browser and navigate to the Auditify dashboard URL:
 ```url
 http://your-domain.local/auditify
