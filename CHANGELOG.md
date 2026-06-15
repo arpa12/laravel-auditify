@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.2] - 2026-06-16
+
+### Fixed
+- **Payload Serialization**: Sanitized `UploadedFile` and general PHP object instances inside request payloads to prevent JSON encoding crashes in the database when logging security events during file uploads (e.g., uploading logo images in setting updates).
+
+---
+
 ## [1.0.1] - 2026-06-16
 
 ### Added
@@ -15,7 +22,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Automated Cache Clearing**: Integrated `php artisan optimize:clear` execution directly inside the `auditify:install` installer command.
 
 ### Fixed
-- **Payload Serialization**: Sanitized `UploadedFile` and general PHP object instances inside request payloads to prevent JSON encoding crashes in the database when logging security events during file uploads (e.g., uploading logo images in setting updates).
 - **UI Column Wrapping**: Disabled text truncation in the Security Reports description column to allow long threat details to wrap naturally.
 - **Horizontal Scrollbars**: Constrained dashboard and log list table column widths to prevent unwanted horizontal scrolling.
 - **Dashboard Version Badge**: Bumped the visual layout footer brand badge to `v1.0.1`.
