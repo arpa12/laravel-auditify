@@ -91,7 +91,7 @@ Auditify separates data logging into three target models under `Auditify\Models`
 
 #### Activity Logs (`ActivityLog`)
 *   **Table Name**: `audit_activity_logs`
-*   **Purpose**: Logs visitor requests, navigation, custom application actions, and auth flows.
+*   **Purpose**: Logs visitor requests, navigation, custom application actions, and auth flows. Features a dedicated detail page view (`GET /activity-logs/{id}`) to inspect logged metadata.
 *   **Captured Attributes / Database Columns**:
     *   `id` (BigInt, Primary Key)
     *   `user_id` & `user_type` (Nullable Morphs) — Polymorphic relationship to the visitor (if authenticated).
@@ -356,12 +356,12 @@ composer require arpanihan/auditify
 ```
 
 ### 2. Run the Installer
-Run the installation command to publish configuration files, copy migrations, and set up your database automatically:
+Run the installation command to publish configuration files, copy migrations, and set up your database automatically (this command will also automatically clear your application cache using `optimize:clear`):
 ```bash
 php artisan auditify:install
 ```
-### 3. Clear Application Cache
-After installation, clear all cached configuration, routes, views, and other cached data to ensure Auditify loads the latest settings:
+### 3. Clear Application Cache (Optional)
+If needed, you can manually clear all cached configuration, routes, views, and other cached data to ensure Auditify loads the latest settings:
 ```bash
 php artisan optimize:clear
 ```
@@ -428,12 +428,33 @@ return [
 
     // Automatic tracking configurations
     'track_auth_events' => true, // Login, Logout, Failed logins
+
+    /*
+     * Mappings of user attributes for email, username, and phone numbers.
+     * These will be dynamically extracted from your User model/login credentials.
+     */
+    'user_fields' => [
+        'email' => 'email',
+        'username' => 'username',
+        'phone' => 'phone',
+    ],
+
     'track_page_visits' => true, // Page visits
 
-    // Global model auditing
-    'auto_audit_models' => true, // Tracks all model lifecycle changes globally
-    'exclude_models' => [        // Model classes to exclude from global auditing
-        // App\Models\Session::class,
+    // Threat alerting configurations & thresholds
+    'alerts' => [
+        'enabled' => false,
+        'recipients' => ['admin@example.com'],
+        'channels' => ['mail', 'log'],
+        'sensitive_modules' => ['User', 'Role', 'Permission', 'Setting', 'Config'],
+        'thresholds' => [
+            'failed_logins' => 3,
+            'failed_logins_timeframe' => 5, // minutes
+            'mass_delete' => 5,
+            'mass_delete_timeframe' => 5, // minutes
+            'bulk_update' => 10,
+            'bulk_update_timeframe' => 5, // minutes
+        ],
     ],
 
     // Firewall scanning
@@ -443,6 +464,19 @@ return [
         'exclude_routes' => [
             // 'admin/rich-text/*',
         ],
+    ],
+
+    // Global model auditing
+    'auto_audit_models' => true, // Tracks all model lifecycle changes globally
+
+    /*
+     * Interval (in seconds) for frontend auto-polling of new unread security alerts.
+     * Set to 60 or higher for better performance, or set to 0 to disable polling entirely.
+     */
+    'security_polling_interval' => 0,
+
+    'exclude_models' => [        // Model classes to exclude from global auditing
+        // App\Models\Session::class,
     ],
 
     // Pruning configuration
@@ -651,6 +685,7 @@ All routes are grouped under the configured `route_prefix` (default: `auditify`)
 | GET | `/action-logs/export/excel` | `ActionLogController@exportExcel` | Export action logs in Excel format |
 | GET | `/action-logs/export/pdf` | `ActionLogController@exportPdf` | Export action logs in PDF format |
 | GET | `/activity-logs` | `ActivityLogController@index` | View list of activity logs |
+| GET | `/activity-logs/{id}` | `ActivityLogController@show` | View activity log details |
 | GET | `/activity-logs/export/csv` | `ActivityLogController@exportCsv` | Export activity logs in CSV format |
 | GET | `/activity-logs/export/excel` | `ActivityLogController@exportExcel` | Export activity logs in Excel format |
 | GET | `/activity-logs/export/pdf` | `ActivityLogController@exportPdf` | Export activity logs in PDF format |

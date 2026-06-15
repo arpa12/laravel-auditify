@@ -557,7 +557,20 @@
                     </div>
                     <div class="user-info">
                         <div class="user-name">{{ $topUser->user->name ?? 'Guest User' }}</div>
-                        <div class="user-email">{{ $topUser->user->email ?? 'no-email@guest.com' }}</div>
+                        <div class="user-email">
+                            @php
+                                $emailKey = config('auditify.user_fields.email', 'email');
+                                $usernameKey = config('auditify.user_fields.username', 'username');
+                                $phoneKey = config('auditify.user_fields.phone', 'phone');
+                                $details = [];
+                                if ($topUser->user) {
+                                    if (!empty($topUser->user->{$emailKey})) { $details[] = $topUser->user->{$emailKey}; }
+                                    if (!empty($topUser->user->{$usernameKey})) { $details[] = $topUser->user->{$usernameKey}; }
+                                    if (!empty($topUser->user->{$phoneKey})) { $details[] = $topUser->user->{$phoneKey}; }
+                                }
+                            @endphp
+                            {{ implode(' • ', $details) ?: 'no-credentials@guest.com' }}
+                        </div>
                     </div>
                     <span class="user-count">{{ $topUser->count }} events</span>
                 </div>

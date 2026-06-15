@@ -527,4 +527,91 @@ class LoggingTest extends TestCase
 
         $this->assertEquals(1, $count);
     }
+
+    public function test_login_logout_events_with_multi_identifiers(): void
+    {
+        // 1. Add username and phone columns to the users table schema dynamically for this test
+        \Illuminate\Support\Facades\Schema::table('users', function ($table) {
+            $table->string('username')->nullable();
+            $table->string('phone')->nullable();
+        });
+
+        // 2. Configure user fields mapping
+        config([
+            'auditify.user_fields' => [
+                'email' => 'email',
+                'username' => 'username',
+                'phone' => 'phone',
+            ]
+        ]);
+
+        // 3. Create a user with all three fields
+        $user = User::create([
+            'name' => 'John Doe Multi',
+            'email' => 'john.multi@example.com',
+            'username' => 'johnmulti',
+            'phone' => '01712345678',
+            'password' => bcrypt('password'),
+        ]);
+
+        // 4. Trigger Login event
+        event(new \Illuminate\Auth\Events\Login('web', $user, false));
+
+        // 5. Assert database has compile identifiers
+        $this->assertDatabaseHas('audit_activity_logs', [
+            'activity' => 'Login: john.multi@example.com | Username: johnmulti | Phone: 01712345678',
+            'user_id' => $user->id,
+        ]);
+
+        // 6. Trigger Logout event
+        event(new \Illuminate\Auth\Events\Logout('web', $user));
+
+        // 7. Assert database has compile identifiers for logout
+        $this->assertDatabaseHas('audit_activity_logs', [
+            'activity' => 'Logout: john.multi@example.com | Username: johnmulti | Phone: 01712345678',
+            'user_id' => $user->id,
+        ]);
+    }
+
+    public function test_failed_login_event_with_phone_and_username_credentials(): void
+    {
+        // Trigger Failed Login with non-email credentials
+        event(new \Illuminate\Auth\Events\Failed('web', null, [
+            'phone' => '01700000000',
+            'username' => 'someuser',
+            'password' => 'wrongpassword'
+        ]));
+
+        // Assert it extracted and logged the credentials (ignoring password)
+        $this->assertDatabaseHas('audit_activity_logs', [
+            'activity' => 'Failed Login: phone: 01700000000, username: someuser',
+        ]);
+    }
+
+    public function test_activity_log_show_view(): void
+    {
+        $user = User::create([
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $log = ActivityLog::create([
+            'user_id' => $user->id,
+            'user_type' => get_class($user),
+            'activity' => 'Page Visit: /dashboard',
+            'url' => 'http://localhost/dashboard',
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'Symfony',
+            'properties' => ['foo' => 'bar'],
+        ]);
+
+        $response = $this->actingAs($user)->get(config('auditify.route_prefix', 'auditify') . '/activity-logs/' . $log->id);
+
+        $response->assertStatus(200);
+        $response->assertSee('Activity Log Details');
+        $response->assertSee('Page Visit: /dashboard');
+        $response->assertSee('foo');
+        $response->assertSee('bar');
+    }
 }

@@ -27,8 +27,12 @@ class InstallCommand extends Command
         $this->call('migrate');
 
         $this->newLine();
+        $this->info('Clearing application caches...');
+        $this->call('optimize:clear');
 
+        $this->newLine();
         $this->info('Auditify Installed Successfully.');
+        $this->comment('Tip: During local development, avoid running "php artisan config:cache" so that configuration changes are loaded instantly.');
 
         return self::SUCCESS;
     }

@@ -25,6 +25,16 @@ return [
 
     'track_auth_events' => true,
 
+    /*
+     * Mappings of user attributes for email, username, and phone numbers.
+     * These will be dynamically extracted from your User model/login credentials.
+     */
+    'user_fields' => [
+        'email' => 'email',
+        'username' => 'username',
+        'phone' => 'phone',
+    ],
+
     'track_page_visits' => true,
 
     'alerts' => [
@@ -52,6 +62,12 @@ return [
     ],
 
     'auto_audit_models' => true,
+
+    /*
+     * Interval (in seconds) for frontend auto-polling of new unread security alerts.
+     * Set to 60 or higher for better performance, or set to 0 to disable polling entirely.
+     */
+    'security_polling_interval' => 0,
 
     'exclude_models' => [
         // List model classes to exclude from global auditing here, e.g.:

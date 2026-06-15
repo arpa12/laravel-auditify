@@ -111,8 +111,12 @@
     }
 
     .activity-badge {
-        display: inline-flex;
-        align-items: center;
+        display: inline-block;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
         padding: 4px 8px;
         border-radius: 6px;
         font-size: 11px;
@@ -238,6 +242,7 @@
                 <th style="white-space: nowrap;">IP Address</th>
                 <th style="white-space: nowrap;">User Agent</th>
                 <th style="white-space: nowrap;">Created At</th>
+                <th style="width: 100px; text-align: center; white-space: nowrap;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -258,24 +263,29 @@
                         @php
                             $badgeClass = 'act-other';
                             if (str_starts_with($log->activity, 'Login')) $badgeClass = 'act-login';
-                            elseif (str_starts_with($log->activity, 'Logout')) $badgeClass = 'act-logout';
-                            elseif (str_starts_with($log->activity, 'Failed Login')) $badgeClass = 'act-failed';
-                            elseif (str_starts_with($log->activity, 'Page Visit')) $badgeClass = 'act-visit';
+                              elseif (str_starts_with($log->activity, 'Logout')) $badgeClass = 'act-logout';
+                              elseif (str_starts_with($log->activity, 'Failed Login')) $badgeClass = 'act-failed';
+                              elseif (str_starts_with($log->activity, 'Page Visit')) $badgeClass = 'act-visit';
                         @endphp
-                        <span class="activity-badge {{ $badgeClass }}">{{ $log->activity }}</span>
+                        <span class="activity-badge {{ $badgeClass }}" title="{{ $log->activity }}">{{ $log->activity }}</span>
                     </td>
-                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $log->url }}">
                         {{ $log->url ?? '-' }}
                     </td>
                     <td style="font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: nowrap;">{{ $log->ip_address ?? '-' }}</td>
-                    <td style="color: var(--text-muted); font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <td style="color: var(--text-muted); font-size: 11px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $log->user_agent }}">
                         {{ $log->user_agent ?? '-' }}
                     </td>
                     <td style="white-space: nowrap;"><span class="audit-timestamp" data-timestamp="{{ $log->created_at->toIso8601String() }}">{{ $log->created_at->format('Y-m-d H:i:s') }}</span></td>
+                    <td style="text-align: center; white-space: nowrap;">
+                        <a href="{{ url(config('auditify.route_prefix', 'auditify') . '/activity-logs/' . $log->id) }}" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px; border-radius: 6px;">
+                            Details
+                        </a>
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">
+                    <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 40px 0;">
                         No user activity logs found matching the filters.
                     </td>
                 </tr>

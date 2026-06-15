@@ -47,26 +47,78 @@ class AuditifyServiceProvider extends ServiceProvider
         // Register Auth event listeners
         if (config('auditify.track_auth_events', true)) {
             Event::listen(Login::class, function (Login $event) {
+                $user = $event->user;
+                $identifiers = [];
+                $emailKey = config('auditify.user_fields.email', 'email');
+                $usernameKey = config('auditify.user_fields.username', 'username');
+                $phoneKey = config('auditify.user_fields.phone', 'phone');
+
+                if (!empty($user->{$emailKey})) {
+                    $identifiers[] = $user->{$emailKey};
+                }
+                if (!empty($user->{$usernameKey})) {
+                    $identifiers[] = 'Username: ' . $user->{$usernameKey};
+                }
+                if (!empty($user->{$phoneKey})) {
+                    $identifiers[] = 'Phone: ' . $user->{$phoneKey};
+                }
+
+                if (empty($identifiers)) {
+                    $identifiers[] = $user->name ?? $user->id;
+                }
+
                 Auditify::logActivity(
-                    'Login: ' . ($event->user->email ?? $event->user->name ?? $event->user->id),
+                    'Login: ' . implode(' | ', $identifiers),
                     request()->fullUrl(),
-                    $event->user
+                    $user
                 );
             });
 
             Event::listen(Logout::class, function (Logout $event) {
-                if ($event->user) {
+                $user = $event->user;
+                if ($user) {
+                    $identifiers = [];
+                    $emailKey = config('auditify.user_fields.email', 'email');
+                    $usernameKey = config('auditify.user_fields.username', 'username');
+                    $phoneKey = config('auditify.user_fields.phone', 'phone');
+
+                    if (!empty($user->{$emailKey})) {
+                        $identifiers[] = $user->{$emailKey};
+                    }
+                    if (!empty($user->{$usernameKey})) {
+                        $identifiers[] = 'Username: ' . $user->{$usernameKey};
+                    }
+                    if (!empty($user->{$phoneKey})) {
+                        $identifiers[] = 'Phone: ' . $user->{$phoneKey};
+                    }
+
+                    if (empty($identifiers)) {
+                        $identifiers[] = $user->name ?? $user->id;
+                    }
+
                     Auditify::logActivity(
-                        'Logout: ' . ($event->user->email ?? $event->user->name ?? $event->user->id),
+                        'Logout: ' . implode(' | ', $identifiers),
                         request()->fullUrl(),
-                        $event->user
+                        $user
                     );
                 }
             });
 
             Event::listen(Failed::class, function (Failed $event) {
+                $filtered = array_diff_key($event->credentials, array_flip([
+                    'password', 'password_confirmation', 'password_hash', 'secret', 'token', 'remember'
+                ]));
+
+                $credentialsList = [];
+                foreach ($filtered as $key => $val) {
+                    if (is_scalar($val)) {
+                        $credentialsList[] = count($filtered) === 1 ? $val : "$key: $val";
+                    }
+                }
+                $credentialsString = implode(', ', $credentialsList) ?: 'unknown';
+
                 Auditify::logActivity(
-                    'Failed Login: ' . ($event->credentials['email'] ?? 'unknown'),
+                    'Failed Login: ' . $credentialsString,
                     request()->fullUrl(),
                     $event->user ?? null
                 );

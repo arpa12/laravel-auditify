@@ -79,6 +79,13 @@ class ActivityLogController
         return view('auditify::activity-logs.index', compact('logs', 'users', 'activities'));
     }
 
+    public function show($id)
+    {
+        $log = ActivityLog::findOrFail($id);
+
+        return view('auditify::activity-logs.show', compact('log'));
+    }
+
     public function storeFrontendEvent(Request $request)
     {
         $validated = $request->validate([

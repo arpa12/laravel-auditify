@@ -30,6 +30,7 @@ Route::middleware($middleware)
         Route::get('/activity-logs/export/csv', [ActivityLogController::class, 'exportCsv']);
         Route::get('/activity-logs/export/excel', [ActivityLogController::class, 'exportExcel']);
         Route::get('/activity-logs/export/pdf', [ActivityLogController::class, 'exportPdf']);
+        Route::get('/activity-logs/{id}', [ActivityLogController::class, 'show']);
 
         // Module 3: Security Logs
         Route::get('/security-logs', [SecurityLogController::class, 'index']);

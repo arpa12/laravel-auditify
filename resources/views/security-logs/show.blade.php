@@ -143,9 +143,22 @@
                     <span class="meta-label">Responsible User</span>
                     <span class="meta-val">{{ $log->user?->name ?? 'System / Guest' }}</span>
                 </div>
+                @php
+                    $emailKey = config('auditify.user_fields.email', 'email');
+                    $usernameKey = config('auditify.user_fields.username', 'username');
+                    $phoneKey = config('auditify.user_fields.phone', 'phone');
+                @endphp
                 <div class="meta-item">
                     <span class="meta-label">User Email</span>
-                    <span class="meta-val">{{ $log->user?->email ?? 'N/A' }}</span>
+                    <span class="meta-val">{{ $log->user?->{$emailKey} ?? 'N/A' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Username</span>
+                    <span class="meta-val">{{ $log->user?->{$usernameKey} ?? 'N/A' }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">Phone</span>
+                    <span class="meta-val">{{ $log->user?->{$phoneKey} ?? 'N/A' }}</span>
                 </div>
                 <div class="meta-item">
                     <span class="meta-label">IP Address</span>

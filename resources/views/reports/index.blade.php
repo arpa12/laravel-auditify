@@ -579,7 +579,7 @@
                                     </span>
                                 </td>
                                 <td><strong>{{ $log->title }}</strong></td>
-                                <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                <td style="max-width: 300px; word-break: break-word;">
                                     {{ $log->description }}
                                 </td>
                                 <td><code>{{ $log->ip_address ?? 'System' }}</code></td>
