@@ -114,6 +114,12 @@ class AuditifyService
             if (is_array($value)) {
                 return [$key => $this->maskSensitiveValues($value)];
             }
+            if (is_object($value)) {
+                if ($value instanceof \Symfony\Component\HttpFoundation\File\UploadedFile) {
+                    return [$key => '[File: ' . $value->getClientOriginalName() . ']'];
+                }
+                return [$key => '[Object: ' . get_class($value) . ']'];
+            }
             return [$key => $value];
         })->all();
     }
